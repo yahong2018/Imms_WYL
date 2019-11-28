@@ -1,0 +1,16 @@
+/.sencha/
+/.vscode/
+/.vs/
+.DS_Store
+
+/Core/bin/
+/Core/obj/
+/Mes/bin/
+/Mes/obj/
+/WebManager/bin/
+/WebManager/obj/
+/WebManager/WebManager.csproj.user
+
+/WebManager/wwwroot/upload/excel/kanban/
+
+*_log.txt

@@ -1,0 +1,96 @@
+﻿[
+    {
+        "programName": "智能管网",
+        "glyph": "0xf201",
+        "expanded": true,
+        "leaf": false,
+        "children": [
+            {
+                "programName": "主机收发器管理",
+                "url": "app.view.smartPipe.rsdevice.RSDevicePanel",
+                "glyph": "0xf09e",
+                "leaf": true
+            },
+            {
+                "programName": "监测井管理",
+                "url": "app.view.smartPipe.well.WellPanel",
+                "glyph": "0xf080",
+                "leaf": true
+            },
+            {
+                "programName": "传感器管理",
+                "url": "app.view.smartPipe.sensor.SensorPanel",
+                "glyph": "0xf2c7",
+                "leaf": true
+            },
+            {
+                "programName": "监测线路管理",
+                "url": "app.view.smartPipe.line.LinePanel",
+                "glyph": "0xf201",
+                "leaf": true
+            },
+            {
+                "programName": "监测线路配置",
+                "url": "app.view.smartPipe.line.LineWellPanel",
+                "glyph": "0xf047",
+                "leaf": true
+            },
+            {
+                "programName": "水流方向配置",
+                "url": "app.view.smartPipe.lineDirection.LineDirectionPanel",
+                "glyph": "0xf162",
+                "leaf": true
+            },
+            {
+                "programName": "监测数据查询",
+                "url": "app.view.smartPipe.data.SensorDataPanel",
+                "glyph": "0xf0ce",
+                "leaf": true
+            }
+        ]
+    },
+    {
+        "programName": "系统管理",
+        "expanded": true,
+        "leaf": false,
+        "glyph": "0xf233",
+        "children": [
+            {
+                "programName": "用户管理",
+                "url": "app.view.admin.login.LoginPanel",
+                "glyph": "0xf007",
+                "leaf": true
+            },
+            {
+                "programName": "角色管理",
+                "url": "AgreementPlan",
+                "glyph": "0xf0c0",
+                "leaf": true
+            },
+            {
+                "programName": "密码更改",
+                "url": "Payment",
+                "glyph": "0xf084",
+                "leaf": true
+            },
+            {
+                "programName": "系统日志",
+                "url": "app.view.admin.syslog.SysLogPanel",
+                "glyph": "0xf1ea",
+                "leaf": true
+            },
+            {
+                "programName": "设备和服务管理",
+                "url": "app.view.admin.device.DevicePanel",
+                "glyph": "0xf26c",
+                "leaf": true
+            },
+            {
+                "programName": "参数配置",
+                "url": "app.view.admin.sysSetting.SysSettingPanel",
+                "glyph": "0xf085",
+                "leaf": true
+            }
+        ]
+    }
+]

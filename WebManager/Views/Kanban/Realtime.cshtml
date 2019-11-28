@@ -1,0 +1,287 @@
+<!DOCTYPE>
+<html>
+
+<head>
+    <title>生产实时看板</title>
+    <base href="@Context.Request.PathBase.ToString()/ " />
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <style>
+        html,
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding:0px;
+            margin: 0px;          
+        }
+
+        table{
+            border-collapse: collapse;
+            width:100%;
+            text-align: center;
+        }
+
+        td,
+        th {
+            border: 1px solid darkgray;            
+        }
+
+        tr> :first-child {
+            border-left: none !important;
+        }
+
+        tr> :last-child {
+            border-right: none !important;
+        }
+
+        .row {
+            height: 32px;
+        }
+
+        #detail-summary th {
+           border:1px darkgreen solid !important;
+           background-color:darkgreen !important; 
+        }
+
+        #line-summary th{
+            border-color: cornflowerblue;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="width: 100%;line-height:100px;vertical-align: middle; height: 100px;">
+        <div style="width: 100%;height: 10px;"></div>
+        <div style="float:left; height: 100%;">
+            <img style="height: 100px;" src="resources/img/wiseally.png" />
+        </div>
+        <div id="line_id"
+            style="float:left;color: red; font-size: 28px; width: 400px; height: 100%;padding-left: 30px;margin-top: -10px;">
+            Cell Line:A301-1
+        </div>
+        <div
+            style="float:left;font-size: 48px;padding-left:100px; width: 500px; height: 100%;text-align: justify;text-align-last: justify;margin-top: -15px;">
+            生产实时看板
+        </div>
+        <div id="current_time" style="float:right;font-size: 32px; width: 300px;height: 100%;line-height:50px;text-align: center;">
+            2019年10月08日 10:31:28
+        </div>
+    </div>
+    <div style="width: 100%;height: 20px;"></div>
+    <div style="width: 89vw;padding:0px;margin: 0px;float:left;">       
+        <table id="line-summary" style=" font-size: 20px; color:green;height: 80px;">
+            <tr>
+                <th class="first_td">产品型号</th>
+                <th style="width:200px;">AL666-ACC-01R</th>
+                <th>产品名称</th>
+                <th style="width:200px;">&nbsp;</th>
+                <th>工单号</th>
+                <th style="width:200px;">&nbsp;</th>
+                <th>产出每小时<br />(UPH)</th>
+                <th>30(PCS)</th>
+                <th>人数</th>
+                <th>6(人)</th>
+            </tr>
+        </table>
+        <div style="width: 100%;height: 20px;"></div>
+        <table id="line-details">
+            <tr  style="background-color:RoyalBlue;height: 35px !important;" class="row">
+                <th class="first_td">时间段</th>
+                <th>要求产出(件)</th>
+                <th>良品(件)</th>
+                <th>不良品(件)</th>
+                <th>总数(件)</th>
+                <th>合格率(%)</th>
+                <th>生产率(%)</th>
+            </tr>
+            <tr class="row">
+                <td>08:00~09:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr class="row">
+                <td>09:00~10:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr class="row">
+                <td>10:00~11:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr class="row">
+                <td>11:00~12:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr class="row">
+                <td>12:00~13:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr class="row">
+                <td>13:00~14:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr class="row">
+                <td>14:00~15:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+
+            <tr class="row">
+                <td>15:00~16:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr class="row">
+                <td>16:00~17:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+
+            <tr class="row">
+                <td>17:00~18:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+
+            <tr class="row">
+                <td>18:00~19:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr class="row">
+                <td>19:00~20:00</td>
+                <td>100</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr style="background-color:RoyalBlue ;height: 35px !important;" class="row">
+                <td>累计数</td>
+                <td>1200(件)</td>
+                <td>0(件)</td>
+                <td>0(件)</td>
+                <td>0(件)</td>
+                <td>0%</td>
+                <td>0%</td>
+            </tr>
+        </table>
+
+        <div style="width: 49%;height:320px;float: left; margin:0px;padding:0px;">
+            <table id="detail-summary">
+                <thead>
+                    <caption style="color: red;font-size:32px;font-weight: bolder;height: 75px;line-height: 75px;vertical-align: middle;">
+                        生产实际
+                    </caption>
+                    <tr style="border: none !important;height: 50px;">
+                        <th >类别</th>
+                        <th >计划数</th>
+                        <th >生产数</th>
+                        <th >生产率</th>
+                        <th >不良数</th>
+                        <th >不良率</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="height: 110px;">
+                        <td >当前时间<br />10:00~11:00</td>
+                        <td >100</td>
+                        <td >0</td>
+                        <td >0%</td>
+                        <td >0</td>
+                        <td >0%</td>
+                    </tr>
+                    <tr style="height: 110px;">
+                        <td >当天统计<br />11-Oct 2019</td>
+                        <td >1200</td>
+                        <td >0</td>
+                        <td >0%</td>
+                        <td >0</td>
+                        <td >0%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="charts" style="width: 50%;height:340px;float: right;padding-top:20px;">
+        </div>
+    </div>
+
+    <div style="width:10vw;text-align:centner;float:right;margin:0px;padding:0px;">
+        <div id="person_01">
+            <img  style="height: 203px;width: 156px;" src="resources/img/person.png">
+            <div>拉长:张三</div>
+        </div>
+
+        <div id="person_02">
+            <img style="height: 203px;width: 156px;" src="resources/img/001.jpg">
+            <div>测1:李四</div>
+        </div>
+
+        <div id="person_03">
+            <img  style="height: 203px;width: 156px;" src="resources/img/002.jpg">
+            <div>测2:王五</div>
+        </div>
+
+        <div id="person_04">
+            <img  style="height: 203px;width: 156px;" src="resources/img/003.jpg">
+            <div>终检:赵大</div>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<script src="~/lib/babel-polyfill/polyfill.js"></script>
+<script src="~/lib/echarts/echarts.js"></script>
+<script src="~/lib/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/kanban/realtime.js"></script>

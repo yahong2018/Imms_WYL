@@ -1,0 +1,79 @@
+<html>
+
+<head>
+    <base href="@Context.Request.PathBase.ToString()/ " />
+    <style>
+        html,body{
+            font-size: 20px;
+        }
+        .row {
+            width: 1200px;
+            float: none;
+        }
+
+        .container {
+            margin-top: 15px;
+            margin-left:30px;
+            padding-left:10px;
+            height: 150px;
+            width: 520px;
+            position: relative;
+            border: 1px dashed black;
+        }
+
+        .left {
+            float: left;
+            width: 100px;            
+        }
+
+        .barcode {
+            position: absolute;
+            top: 50%;
+            margin-top: -57px;
+        }
+
+        .lablel {
+            width: 400px;
+            position: absolute;
+            top: 50%;
+            margin-top: -50px;
+            left: 150px;
+        }
+    </style>
+</head>
+<body>
+    @for(int i=0;i<ViewBag.BarcodeDataList.Count;i+=2){         
+    <div class="row">
+        <div class="container" style="float:left;">
+            <div class="left">
+                <img class="barcode"
+                    src='misc/qrcode/create?base64Content=@ViewBag.BarcodeDataList[i]&pixel=2'>
+            </div>
+            <div class="lablel">
+                <div>车间：@ViewBag.DataList[i].Item1</div>
+                <div>产品：@ViewBag.DataList[i].Item2</div>
+                <div>数量：@ViewBag.Datalist[i].Item3</div>
+                <div>卡号：@ViewBag.DataList[i].Item4</div>                
+            </div>
+        </div>
+        
+        @if( (i+1) < ViewBag.BarcodeDataList.Count){
+            <div class="container" style="float:left;">
+                <div class="left">
+                    <img class="barcode"
+                        src='misc/qrcode/create?base64Content=@ViewBag.BarcodeDataList[i+1]&pixel=2'>
+                </div>
+                <div class="lablel">
+                    <div>车间：@ViewBag.DataList[i+1].Item1</div>
+                    <div>产品：@ViewBag.DataList[i+1].Item2</div>
+                    <div>数量：@ViewBag.Datalist[i+1].Item3</div>
+                    <div>卡号：@ViewBag.DataList[i+1].Item4</div>                
+                </div>
+            </div>
+        }
+    </div>
+    }
+
+</body>
+
+</html>

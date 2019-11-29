@@ -19,8 +19,8 @@ namespace Imms.Data.Domain
         protected override void InternalConfigure(EntityTypeBuilder<SystemParameter> builder)
         {
             base.InternalConfigure(builder);
-            builder.ToTable("system_parameter");
-            ImmsDbContext.RegisterEntityTable<SystemParameter>("system_parameter");
+            builder.ToTable("mes_system_parameter");
+            ImmsDbContext.RegisterEntityTable<SystemParameter>("mes_system_parameter");
 
             builder.Property(e => e.ParameterClassCode).HasColumnName("parameter_class_code");
             builder.Property(e => e.parameterClassName).HasColumnName("parameter_class_name");

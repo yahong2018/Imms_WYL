@@ -25,14 +25,7 @@ namespace Imms.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                if (ConfigurationManager.ConnectionString.ProviderType == ProviderType.SqlServer)
-                {
-                    optionsBuilder.UseSqlServer(ConfigurationManager.ConnectionString.ConnectionUrl);
-                }
-                else if (ConfigurationManager.ConnectionString.ProviderType == ProviderType.MySql)
-                {
-                    optionsBuilder.UseMySQL(ConfigurationManager.ConnectionString.ConnectionUrl);
-                }
+                optionsBuilder.UseSqlServer(ConfigurationManager.ConnectionString.ConnectionUrl);
             }
 
             var loggerFactory = new LoggerFactory();
@@ -55,7 +48,7 @@ namespace Imms.Data
             List<DataChangedNotifyEvent> eventList = new List<DataChangedNotifyEvent>();
             foreach (EntityEntry entry in modifiedEntities)
             {
-                this.FillTracableData(entry);                
+                this.FillTracableData(entry);
 
                 int dmlType = this.GetDmlType(entry);
                 IEntity entity = entry.Entity as IEntity;
@@ -69,7 +62,7 @@ namespace Imms.Data
             }
             return result;
         }
-        
+
 
         private int GetDmlType(EntityEntry e)
         {
@@ -115,7 +108,7 @@ namespace Imms.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new OrgConfigure());              
+            modelBuilder.ApplyConfiguration(new OrgConfigure());
             modelBuilder.ApplyConfiguration(new SystemParameterConfigure());
 
             foreach (ICustomModelBuilder customModelBuilder in customModelBuilders)

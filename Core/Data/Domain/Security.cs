@@ -14,7 +14,7 @@ namespace Imms.Security.Data.Domain
         public byte UserStatus { get; set; }
         public string Email { get; set; }
         // public string PhoneNumber { get; set; }
-        public bool IsOnline { get; set; }
+        public byte IsOnline { get; set; }
         public DateTime? LastLoginTime { get; set; }
 
         public virtual List<RoleUser> Roles { get; set; } = new List<RoleUser>();
@@ -104,12 +104,12 @@ namespace Imms.Security.Data.Domain
         protected override void InternalConfigure(EntityTypeBuilder<ProgramPrivilege> builder)
         {
             base.InternalConfigure(builder);
-            builder.ToTable("program_privilege");
-            ImmsDbContext.RegisterEntityTable<ProgramPrivilege>("program_privilege");
+            builder.ToTable("mes_program_privilege");
+            ImmsDbContext.RegisterEntityTable<ProgramPrivilege>("mes_program_privilege");
 
-            builder.Property(e => e.PrivilegeCode).IsRequired().HasColumnName("privilege_code").HasMaxLength(50).IsUnicode(false);
-            builder.Property(e => e.PrivilegeName).IsRequired().HasColumnName("privilege_name").HasMaxLength(120).IsUnicode(false);
-            builder.Property(e => e.ProgramId).IsRequired().HasColumnName("program_id").HasMaxLength(50).IsUnicode(false);
+            builder.Property(e => e.PrivilegeCode).IsRequired().HasColumnName("privilege_code");
+            builder.Property(e => e.PrivilegeName).IsRequired().HasColumnName("privilege_name");
+            builder.Property(e => e.ProgramId).IsRequired().HasColumnName("program_id");
 
             builder.HasOne(e => e.Program).WithMany(e => e.Privielges).HasForeignKey(x => x.ProgramId).HasConstraintName("program_id");
         }
@@ -120,13 +120,13 @@ namespace Imms.Security.Data.Domain
         protected override void InternalConfigure(EntityTypeBuilder<RolePrivilege> builder)
         {
             base.InternalConfigure(builder);
-            builder.ToTable("role_privilege");
-            ImmsDbContext.RegisterEntityTable<RolePrivilege>("role_privilege");
+            builder.ToTable("mes_role_privilege");
+            ImmsDbContext.RegisterEntityTable<RolePrivilege>("mes_role_privilege");
 
-            builder.Property(e => e.PrivilegeCode).IsRequired().HasColumnName("privilege_code").HasMaxLength(50).IsUnicode(false);
-            builder.Property(e => e.ProgramId).IsRequired().HasColumnName("program_id").HasMaxLength(50).IsUnicode(false);
-            builder.Property(e => e.ProgramPrivilegeId).HasColumnName("program_privilege_id").HasColumnType("bigint(20)");
-            builder.Property(e => e.RoleId).HasColumnName("role_id").HasColumnType("bigint(20)");
+            builder.Property(e => e.PrivilegeCode).IsRequired().HasColumnName("privilege_code");
+            builder.Property(e => e.ProgramId).IsRequired().HasColumnName("program_id");
+            builder.Property(e => e.ProgramPrivilegeId).HasColumnName("program_privilege_id");
+            builder.Property(e => e.RoleId).HasColumnName("role_id");
 
             builder.HasOne(e => e.Role).WithMany(e => e.Privileges).HasForeignKey(e => e.RoleId).HasConstraintName("role_id");
             builder.HasOne(e => e.PorgramPrivielge).WithMany().HasForeignKey(e => e.ProgramPrivilegeId).HasConstraintName("program_privilege_id");
@@ -137,8 +137,8 @@ namespace Imms.Security.Data.Domain
         protected override void InternalConfigure(EntityTypeBuilder<RoleUser> builder)
         {
             base.InternalConfigure(builder);
-            builder.ToTable("role_user");
-            ImmsDbContext.RegisterEntityTable<RoleUser>("role_user");
+            builder.ToTable("mes_role_user");
+            ImmsDbContext.RegisterEntityTable<RoleUser>("mes_role_user");
 
             builder.Property(e => e.RoleId).HasColumnName("role_id").HasColumnType("bigint(20)");
             builder.Property(e => e.UserId).HasColumnName("user_id").HasColumnType("bigint(20)");
@@ -153,16 +153,16 @@ namespace Imms.Security.Data.Domain
         protected override void InternalConfigure(EntityTypeBuilder<SystemProgram> builder)
         {
             base.InternalConfigure(builder);
-            builder.ToTable("system_program");
-            ImmsDbContext.RegisterEntityTable<SystemProgram>("system_program");
+            builder.ToTable("mes_system_program");
+            ImmsDbContext.RegisterEntityTable<SystemProgram>("mes_system_program");
 
-            builder.Property(e => e.Glyph).HasColumnName("glyph").HasMaxLength(100).IsUnicode(false);
-            builder.Property(e => e.Parameters).IsRequired().HasColumnName("parameters").HasMaxLength(255).IsUnicode(false);
-            builder.Property(e => e.ParentId).IsRequired().HasColumnName("parent_id").HasMaxLength(50).IsUnicode(false);
-            builder.Property(e => e.ProgramCode).IsRequired().HasColumnName("program_code").HasMaxLength(50).IsUnicode(false);
-            builder.Property(e => e.ProgramName).IsRequired().HasColumnName("program_name").HasMaxLength(120).IsUnicode(false);
-            builder.Property(e => e.ShowOrder).HasColumnName("show_order").HasColumnType("int(11)");
-            builder.Property(e => e.Url).IsRequired().HasColumnName("url").HasMaxLength(255).IsUnicode(false);
+            builder.Property(e => e.Glyph).HasColumnName("glyph");
+            builder.Property(e => e.Parameters).IsRequired().HasColumnName("parameters");
+            builder.Property(e => e.ParentId).IsRequired().HasColumnName("parent_id");
+            builder.Property(e => e.ProgramCode).IsRequired().HasColumnName("program_code");
+            builder.Property(e => e.ProgramName).IsRequired().HasColumnName("program_name");
+            builder.Property(e => e.ShowOrder).HasColumnName("show_order");
+            builder.Property(e => e.Url).IsRequired().HasColumnName("url");
             builder.Property(e=>e.ProgramStatus).HasColumnName("program_status");
 
             builder.HasMany(e => e.Children).WithOne(e => e.Parent).HasForeignKey(e => e.ParentId).HasConstraintName("parent_id").HasPrincipalKey(x => x.RecordId);
@@ -174,11 +174,11 @@ namespace Imms.Security.Data.Domain
         protected override void InternalConfigure(EntityTypeBuilder<SystemRole> builder)
         {
             base.InternalConfigure(builder);
-            builder.ToTable("system_role");
-            ImmsDbContext.RegisterEntityTable<SystemRole>("system_role");
+            builder.ToTable("mes_system_role");
+            ImmsDbContext.RegisterEntityTable<SystemRole>("mes_system_role");
 
-            builder.Property(e => e.RoleCode).IsRequired().HasColumnName("role_code").HasMaxLength(20).IsUnicode(false);
-            builder.Property(e => e.RoleName).IsRequired().HasColumnName("role_name").HasMaxLength(50).IsUnicode(false);
+            builder.Property(e => e.RoleCode).IsRequired().HasColumnName("role_code");
+            builder.Property(e => e.RoleName).IsRequired().HasColumnName("role_name");
         }
     }
 
@@ -187,16 +187,16 @@ namespace Imms.Security.Data.Domain
         protected override void InternalConfigure(EntityTypeBuilder<SystemUser> builder)
         {
             base.InternalConfigure(builder);
-            builder.ToTable("system_user");
-            ImmsDbContext.RegisterEntityTable<SystemUser>("system_user");
+            builder.ToTable("mes_system_user");
+            ImmsDbContext.RegisterEntityTable<SystemUser>("mes_system_user");
 
-            builder.Property(e => e.Email).IsRequired().HasColumnName("email").HasMaxLength(255).IsUnicode(false);
-            builder.Property(e => e.IsOnline).HasColumnName("is_online").HasColumnType("bit(1)").HasDefaultValueSql("b'0'");
+            builder.Property(e => e.Email).HasColumnName("email");
+            builder.Property(e => e.IsOnline).HasColumnName("is_online");
             builder.Property(e => e.LastLoginTime).HasColumnName("last_login_time");
-            builder.Property(e => e.Pwd).IsRequired().HasColumnName("pwd").HasMaxLength(50).IsUnicode(false);
-            builder.Property(e => e.UserCode).IsRequired().HasColumnName("user_code").HasMaxLength(20).IsUnicode(false);
-            builder.Property(e => e.UserName).IsRequired().HasColumnName("user_name").HasMaxLength(50).IsUnicode(false);
-            builder.Property(e => e.UserStatus).HasColumnName("user_status").HasColumnType("tinyint(4)");
+            builder.Property(e => e.Pwd).HasColumnName("pwd");
+            builder.Property(e => e.UserCode).HasColumnName("user_code");
+            builder.Property(e => e.UserName).HasColumnName("user_name");
+            builder.Property(e => e.UserStatus).HasColumnName("user_status");
             // builder.Property(e=>e.PhoneNumber).HasColumnName("phone_number");
         }
     }

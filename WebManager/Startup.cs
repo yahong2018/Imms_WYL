@@ -121,7 +121,7 @@ namespace Imms.WebManager
             GlobalConstants.GetCurrentUserDelegate = Security.Data.SystemUserLogic.GetCurrentUser;
 
             services.AddSignalR();
-            services.AddSingleton<RealtimeDataPushTask,RealtimeDataPushTask>();    
+            // services.AddSingleton<RealtimeDataPushTask,RealtimeDataPushTask>();    
             services.AddHttpClient();
         }
 
@@ -176,8 +176,8 @@ namespace Imms.WebManager
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            RealtimeDataPushTask task = app.ApplicationServices.GetService<RealtimeDataPushTask>();
-            task.Start();
+            // RealtimeDataPushTask task = app.ApplicationServices.GetService<RealtimeDataPushTask>();
+            // task.Start();
         }
     }
 

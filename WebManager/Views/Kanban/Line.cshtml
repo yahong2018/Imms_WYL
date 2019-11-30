@@ -13,7 +13,7 @@
             text-align: center;
             padding: 0px;
             margin: 0px;
-        }      
+        }
 
         table {
             border-collapse: collapse;
@@ -260,31 +260,31 @@
 
     <div style="width:10vw;text-align:centner;float:right;margin:0px;padding:0px;">
         <div id="person_01">
-            <img style="height: 203px;width: 156px;" src="resources/img/person.png">
-            <div>拉长:张三</div>
+            <img style="height: 203px;width: 156px;" src="@ViewBag.OperatorList[0].PicUrl">
+            <div style="height: 30px;line-height: 30px;vertical-align: middle;">@ViewBag.OperatorList[0].DisplayName</div>
         </div>
 
         <div id="person_02">
-            <img style="height: 203px;width: 156px;" src="resources/img/001.jpg">
-            <div>测1:李四</div>
+            <img style="height: 203px;width: 156px;" src="@ViewBag.OperatorList[1].PicUrl">
+            <div style="height: 30px;line-height: 30px;vertical-align: middle;">@ViewBag.OperatorList[1].DisplayName</div>
         </div>
 
         <div id="person_03">
-            <img style="height: 203px;width: 156px;" src="resources/img/002.jpg">
-            <div>测2:王五</div>
+            <img style="height: 203px;width: 156px;" src="@ViewBag.OperatorList[2].PicUrl">
+            <div style="height: 30px;line-height: 30px;vertical-align: middle;">@ViewBag.OperatorList[2].DisplayName</div>
         </div>
 
         <div id="person_04">
-            <img style="height: 203px;width: 156px;" src="resources/img/003.jpg">
-            <div>终检:赵大</div>
+            <img style="height: 203px;width: 156px;" src="@ViewBag.OperatorList[3].PicUrl">
+            <div style="height: 30px;line-height: 30px;vertical-align: middle;">@ViewBag.OperatorList[3].DisplayName</div>
         </div>
     </div>
 </body>
 
 </html>
 <script>
-    setTimeout('window.moveTo(0,0)', 50);
-    setTimeout('window.resizeTo(screen.availWidth,screen.availHeight)', 50);     
+    // setTimeout('window.moveTo(0,0)', 50);
+    // setTimeout('window.resizeTo(screen.availWidth,screen.availHeight)', 50);     
 </script>
 
 <script src="~/lib/babel-polyfill/polyfill.js"></script>

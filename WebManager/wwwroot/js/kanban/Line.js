@@ -13,6 +13,8 @@ var option = {
         textStyle: {
             color: 'red',
             fontSize: 32,
+            fontFamily: '宋体',
+            fontWeight: 'bolder'
         }
     },
     tooltip: {
@@ -164,6 +166,10 @@ function fill_detail_data(config) {
     total_plan = total_actual = total_good = total_bad = 0;
 
     var hour = new Date().getHours() + 1;
+    if (hour < 8) {
+        hour = 8;
+    }
+
     for (var i = 0; i < detail_items.length; i++) {
         var item = detail_items[i];
         var index = item.index;
@@ -218,6 +224,9 @@ function fill_detail_summary() {
     if (hour >= 20) {
         hour = 20;
     }
+    if (hour < 8) {
+        hour = 8;
+    }
     var detail_items = server_data.line_detail_data || [];
     var item = {};
     for (var i = 0; i < detail_items.length; i++) {
@@ -255,6 +264,8 @@ function fill_detail_summary() {
 var connection = new signalR.HubConnectionBuilder().withUrl("/LineKanbanHub/line").build();
 
 connection.on("OnServerData", function (dataItem) {
+    debugger;
+
     server_data = dataItem;
     var good_items = [];
     var bad_items = [];

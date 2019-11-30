@@ -121,7 +121,7 @@ namespace Imms.WebManager
             GlobalConstants.GetCurrentUserDelegate = Security.Data.SystemUserLogic.GetCurrentUser;
 
             services.AddSignalR();
-            // services.AddSingleton<RealtimeDataPushTask,RealtimeDataPushTask>();    
+            services.AddSingleton<LineKanbanHub,LineKanbanHub>();    
             services.AddHttpClient();
         }
 
@@ -166,7 +166,7 @@ namespace Imms.WebManager
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<KanbanRealtimeHub>("/kanbanHub/realtime");
+                routes.MapHub<LineKanbanHub>("/LineKanbanHub/line");
             });
 
             app.UseMvc(routes =>
@@ -176,8 +176,8 @@ namespace Imms.WebManager
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            // RealtimeDataPushTask task = app.ApplicationServices.GetService<RealtimeDataPushTask>();
-            // task.Start();
+            LineKanbanHub lineKanban = app.ApplicationServices.GetService<LineKanbanHub>();
+            lineKanban.Start();
         }
     }
 

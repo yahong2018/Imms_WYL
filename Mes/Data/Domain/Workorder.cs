@@ -35,6 +35,17 @@ namespace Imms.Mes.Data.Domain
         public DateTime ReportTime { get; set; }
     }
 
+    public class ActiveWorkorder : Entity<long>
+    {
+        public string LineNo { get; set; }
+        public string WorkorderNo { get; set; }
+        public string PartNo { get; set; }
+        public string LastUpdateTime { get; set; }
+        public string GID { get; set; }
+        public string DID { get; set; }
+        public string UpdateStatus { get; set; }
+    }
+
     // public class LineProductSummaryDate : Entity<long>
     // {
     //     public string LineNo { get; set; }
@@ -69,7 +80,7 @@ namespace Imms.Mes.Data.Domain
     }
 
 
-    public class WorkorderConfigure : EntityConfigure<Workorder>
+    public class WorkorderConfigure : OrderEntityConfigure<Workorder>
     {
         protected override void InternalConfigure(EntityTypeBuilder<Workorder> builder)
         {
@@ -87,7 +98,26 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.TimeStartPlan).HasColumnName("time_start_plan");
             builder.Property(e => e.TimeEndPlan).HasColumnName("time_end_plan");
             builder.Property(e => e.TimeStartActual).HasColumnName("time_start_actual");
-            builder.Property(e => e.TimeEndPlan).HasColumnName("time_end_actual");
+            builder.Property(e => e.TimeEndActual).HasColumnName("time_end_actual");
+        }
+    }
+
+
+    public class ActiveWorkorderConfigure : EntityConfigure<ActiveWorkorder>
+    {
+        protected override void InternalConfigure(EntityTypeBuilder<ActiveWorkorder> builder)
+        {
+            base.InternalConfigure(builder);
+            builder.ToTable("mes_active_workorder");
+            ImmsDbContext.RegisterEntityTable<Defect>("mes_active_workorder");
+
+            builder.Property(e => e.WorkorderNo).HasColumnName("workorder_no");
+            builder.Property(e => e.LineNo).HasColumnName("line_no");
+            builder.Property(e => e.PartNo).HasColumnName("part_no");
+            builder.Property(e => e.LastUpdateTime).HasColumnName("last_update_time");
+            builder.Property(e => e.GID).HasColumnName("gid");
+            builder.Property(e => e.DID).HasColumnName("did");
+            builder.Property(e => e.UpdateStatus).HasColumnName("update_status");
         }
     }
 
@@ -109,7 +139,8 @@ namespace Imms.Mes.Data.Domain
         }
     }
 
-    public class LineProductSumaryDateSpanConfigure:EntityConfigure<LineProductSummaryDateSpan>{
+    public class LineProductSumaryDateSpanConfigure : EntityConfigure<LineProductSummaryDateSpan>
+    {
         protected override void InternalConfigure(EntityTypeBuilder<LineProductSummaryDateSpan> builder)
         {
             base.InternalConfigure(builder);
@@ -118,7 +149,7 @@ namespace Imms.Mes.Data.Domain
 
             builder.Property(e => e.WorkorderNo).HasColumnName("workorder_no");
             builder.Property(e => e.LineNo).HasColumnName("line_no");
-            builder.Property(e => e.PartNo).HasColumnName("part_no");            
+            builder.Property(e => e.PartNo).HasColumnName("part_no");
             builder.Property(e => e.ProductDate).HasColumnName("product_date");
 
             builder.Property(e => e.SpanId).HasColumnName("span_id");

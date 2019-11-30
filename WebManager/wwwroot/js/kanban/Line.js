@@ -249,12 +249,12 @@ function fill_detail_summary() {
     row_total.cells[5].innerText = (((total_actual == 0) ? 0 : (total_bad / total_actual)) * 100).toFixed(2) + "%";
 }
 
-var connection = new signalR.HubConnectionBuilder().withUrl("/kanbanHub/realtime").build();
+var connection = new signalR.HubConnectionBuilder().withUrl("/LineKanbanHub/line").build();
 
-connection.on("PushRealtimeData", function (realtimeItem) {
-    server_data = realtimeItem;
+connection.on("OnServerData", function (dataItem) {
+    server_data = dataItem;
     var good_items = [];
-    var bad_items = [];
+    var bad_items = []; 
 
     fill_line_code();
     fill_line_summary();
@@ -277,21 +277,33 @@ connection.on("PushRealtimeData", function (realtimeItem) {
     myChart.setOption(options);
 });
 
+function getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split("=");
+        if (pair[0] == variable) { return pair[1]; }
+    }
+    return (false);
+}
+
+var lineNo = getQueryVariable("lineNo");
+
 function start_connection() {
     connection.start().then(function () {
-        connection.invoke("RegisterRealtimeClient");
+        connection.invoke("RegisterClient",lineNo);
         console.log("connected");
     }).catch(function () {
         setTimeout(start_connection, 5000);
     });
 };
 
-connection.onclose(function () {
+
+connection.onclose(function () {   
     start_connection();
 });
 
 start_connection();
-
 fill_line_code();
 fill_line_summary();
 fill_detail_data({ good_items: [], bad_items: [] });

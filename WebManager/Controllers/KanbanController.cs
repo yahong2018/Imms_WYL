@@ -8,10 +8,15 @@ namespace Imms.WebManager.Controllers
     [Route("kanban")]
     [TypeFilter(typeof(Microsoft.AspNetCore.Mvc.Authorization.AllowAnonymousFilter))]
     public class KanbanController : Controller{
-        [Route("realtime")]
+        [Route("line")]
         public IActionResult Index()
         {
-            return View("Realtime");
-        }        
+            return View("Line");
+        } 
+
+        [Route("line_wrapper")]
+        public IActionResult LineWrapper(){
+            return View("Line_Wrapper");
+        }       
     }    
 }

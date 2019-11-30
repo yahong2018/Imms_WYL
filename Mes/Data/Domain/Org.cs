@@ -18,6 +18,9 @@ namespace Imms.Mes.Data.Domain
     {
         public string LineCode { get { return base.OrgCode; } set { base.OrgCode = value; } }
         public string LineName { get { return base.OrgName; } set { base.OrgName = value; } }
+
+        public int GID { get; set; }
+        public int DID { get; set; }
     }
 
     public class Workstation : Imms.Data.Domain.Org
@@ -28,6 +31,7 @@ namespace Imms.Mes.Data.Domain
         public int GID { get; set; }
         public int DID { get; set; }
         public int Seq { get; set; }
+        public int WorkstationType { get; set; }
     }
 
     public partial class Operator : Entity<long>
@@ -75,6 +79,9 @@ namespace Imms.Mes.Data.Domain
             ImmsDbContext.RegisterEntityTable<Workline>("mes_org");
             builder.Ignore(e => e.LineCode);
             builder.Ignore(e => e.LineName);
+
+            builder.Property(e => e.GID).HasColumnName("gid");
+            builder.Property(e => e.DID).HasColumnName("did");            
         }
     }
 
@@ -90,6 +97,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.GID).HasColumnName("gid");
             builder.Property(e => e.DID).HasColumnName("did");
             builder.Property(e => e.Seq).HasColumnName("seq");
+            builder.Property(e => e.WorkstationType).HasColumnName("workstation_type");
         }
     }
 

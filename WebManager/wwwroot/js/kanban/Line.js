@@ -164,7 +164,7 @@ function fill_detail_data(config) {
     total_plan = total_actual = total_good = total_bad = 0;
 
     var hour = new Date().getHours() + 1;
-    for (var i = 0; i < detail_items.length; i++) {        
+    for (var i = 0; i < detail_items.length; i++) {
         var item = detail_items[i];
         var index = item.index;
         if (hour >= item.hour) {
@@ -215,6 +215,9 @@ function fill_detail_summary() {
     var table = document.getElementById("detail-summary");
     var now = new Date();
     var hour = now.getHours() + 1;
+    if (hour >= 20) {
+        hour = 20;
+    }
     var detail_items = server_data.line_detail_data || [];
     var item = {};
     for (var i = 0; i < detail_items.length; i++) {
@@ -224,8 +227,8 @@ function fill_detail_summary() {
         }
     }
 
-    var text = "当前时间<br/>" + (hour -1) + ":00" + "~" + hour + ":00";
-    var row_current = table.rows[1]; 
+    var text = "当前时间<br/>" + (hour - 1) + ":00" + "~" + hour + ":00";
+    var row_current = table.rows[1];
     row_current.cells[0].innerHTML = text;
     row_current.cells[1].innerText = item.qty_plan;
 
@@ -254,13 +257,13 @@ var connection = new signalR.HubConnectionBuilder().withUrl("/LineKanbanHub/line
 connection.on("OnServerData", function (dataItem) {
     server_data = dataItem;
     var good_items = [];
-    var bad_items = []; 
+    var bad_items = [];
 
     fill_line_code();
     fill_line_summary();
     fill_detail_data({ good_items: good_items, bad_items: bad_items });
     fill_detail_summary();
-  
+
     var options = {
         series: [
             {
@@ -291,7 +294,7 @@ var lineNo = getQueryVariable("lineNo");
 
 function start_connection() {
     connection.start().then(function () {
-        connection.invoke("RegisterClient",lineNo);
+        connection.invoke("RegisterClient", lineNo);
         console.log("connected");
     }).catch(function () {
         setTimeout(start_connection, 5000);
@@ -299,7 +302,7 @@ function start_connection() {
 };
 
 
-connection.onclose(function () {   
+connection.onclose(function () {
     start_connection();
 });
 

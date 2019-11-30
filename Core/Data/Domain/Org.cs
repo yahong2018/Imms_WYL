@@ -14,6 +14,9 @@ namespace Imms.Data.Domain
 
         public long ParentId { get; set; }
 
+        public int GID { get; set; }
+        public int DID { get; set; }
+
         public virtual List<Org> Children { get; set; } = new List<Org>();
         public virtual Org Parent { get; set; }
     }
@@ -29,6 +32,9 @@ namespace Imms.Data.Domain
             builder.Property(e => e.OrgCode).HasColumnName("org_code");
             builder.Property(e => e.OrgName).HasColumnName("org_name");
             builder.Property(e => e.ParentId).HasColumnName("parent_id");
+
+            builder.Property(e => e.GID).HasColumnName("gid").HasColumnType("int");
+            builder.Property(e => e.DID).HasColumnName("did").HasColumnType("int");
 
             builder.HasMany(e => e.Children).WithOne(e => e.Parent).HasForeignKey(e => e.ParentId).HasConstraintName("parent_id");
         }

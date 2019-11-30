@@ -19,12 +19,11 @@ namespace Imms.WebManager
         public bool Terminated { get; set; }
         private System.Threading.Thread dataPushThread;
         private DbContext dbContext;
-        private string greenLight = "2|0|1|230|0E0100120000220000310000000074";
-        private string redLight = "2|0|1|230|0E0100110000220000320000000074";
 
         public LineKanbanHub()
         {
             this.dbContext = GlobalConstants.DbContextFactory.GetContext();
+            this.dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public void Start()
@@ -82,48 +81,44 @@ namespace Imms.WebManager
                     }
                     int hour = Now.Hour;
                     List<LineProductSummaryDateSpan> hourList = this.GetLineProductSummaryDateSpan(client.LineNo, hour, false);
-                    if (hourList.Count == 0)
+                    if (hour >= 20)
                     {
-                        continue;
-                    }
-
-                    if (hour > 20)
-                    {
-                        hour = 20;
+                        hour = 19;
                     }
                     if (hour < 8)
                     {
-                        hour = 8;
+                        hour = 7;
                     }
                     DetailItem detailItem = DataList[client.LineNo].line_detail_data.Where(x => x.hour == hour + 1).Single();
                     // detailItem.qty_plan = hourList.Sum(x => x.QtyPlan);
                     detailItem.qty_good = hourList.Sum(x => x.QtyGood);
                     detailItem.qty_bad = hourList.Sum(x => x.QtyBad);
 
+                    this.FillWorkorder(DataList[client.LineNo], client.LineNo);
+
                     int planQty = (int)(Now.Minute * 1.66);
-                    bool toggleLight = false;                    
+                    bool toggleLight = false;
                     int curLamp = 0;
                     if (detailItem.qty_bad > 0 || (hour > 8 && detailItem.qty_good < planQty))
-                    {
-                        //如果出现了品质问题或者进度落后，则亮红灯
+                    {//如果出现了品质问题或者进度落后，则亮红灯
                         if (client.Lamp != 1)
                         {
                             toggleLight = true;
-                            curLamp = 1;                            
+                            curLamp = 1;
                         }
                     }
-                    else
+                    else //否则亮绿灯
                     {
-                        //否则亮绿灯
                         if (client.Lamp != 3)
                         {
                             toggleLight = true;
-                            curLamp = 3;                            
+                            curLamp = 3;
                         }
                     }
 
-                    if(toggleLight){
-                        this.LigthLamp(client,curLamp);
+                    if (toggleLight)
+                    {
+                        this.LigthLamp(client, curLamp);
                     }
                 }
 
@@ -142,8 +137,10 @@ namespace Imms.WebManager
         private void LigthLamp(WebSocketClient client, int curLamp)
         {
             client.Lamp = curLamp;
-            //TODO:插入数据库
-            string sql = "insert into DeviceCmdList()"
+            var gidParam = new SqlParameter("GID", client.GID);
+            var didParam = new SqlParameter("DID", client.DID);
+            var lampParam = new SqlParameter("Lamp", client.Lamp);
+            this.dbContext.Database.ExecuteSqlCommand("MES_Light @GID,@DID,@Lamp", gidParam, didParam, lampParam);
         }
 
         public override Task OnDisconnectedAsync(Exception exception)
@@ -176,6 +173,11 @@ namespace Imms.WebManager
                     client.DID = theLine.DID;
 
                     this.ConnectedIdList.Add(id, client);
+
+                    if (DateTime.Now.Hour < 9)  // 如果现在是在9:00之前，则先亮绿灯
+                    {
+                        this.LigthLamp(client, 1);
+                    }
                 }
                 if (lineNo == null)
                 {
@@ -243,38 +245,21 @@ namespace Imms.WebManager
                     return dbContext.Set<LineProductSummaryDateSpan>().Where(x => x.LineNo == lineNo && x.ProductDate == productDate).ToList();
                 }
 
-                var lineNoParam = new SqlParameter("lineNo", lineNo);
-                var productDateParam = new SqlParameter("productDate", productDate);
-                var spanIdParam = new SqlParameter("spanId", hour);
-                string sql = "select * from mes_line_product_summary_datespan where line_no = @lineNo and product_date = @productDate and span_id=@spanId";
+                IQueryable<LineProductSummaryDateSpan> query = null;
                 if (hour >= 20)
                 {
-                    sql = "select * from mes_line_product_summary_datespan where line_no = @lineNo and product_date = @productDate and span_id >=20";
+                    query = dbContext.Set<LineProductSummaryDateSpan>().Where(x => x.LineNo == lineNo && x.ProductDate == productDate && x.SpanId >= 20);
                 }
                 else if (hour < 8)
                 {
-                    sql = "select * from mes_line_product_summary_datespan where line_no = @lineNo and product_date = @productDate and span_id <8";
+                    query = dbContext.Set<LineProductSummaryDateSpan>().Where(x => x.LineNo == lineNo && x.ProductDate == productDate && x.SpanId < 8);
                 }
-
-                List<LineProductSummaryDateSpan> result = new List<LineProductSummaryDateSpan>();
-                using (RelationalDataReader reader = dbContext.Database.ExecuteSqlQuery(sql, lineNoParam, productDateParam, spanIdParam))
+                else
                 {
-                    while (reader.DbDataReader.Read())
-                    {
-                        LineProductSummaryDateSpan item = new LineProductSummaryDateSpan();
-                        item.LineNo = reader.DbDataReader["line_no"].ToString();
-                        item.PartNo = reader.DbDataReader["part_no"].ToString();
-                        item.ProductDate = (DateTime)reader.DbDataReader["product_date"];
-                        item.QtyBad = (int)reader.DbDataReader["qty_bad"];
-                        item.QtyGood = (int)reader.DbDataReader["qty_good"];
-                        item.QtyPlan = (int)reader.DbDataReader["qty_plan"];
-                        item.SpanId = (int)reader.DbDataReader["span_id"];
-
-                        result.Add(item);
-                    }
+                    query = dbContext.Set<LineProductSummaryDateSpan>().Where(x => x.LineNo == lineNo && x.ProductDate == productDate && x.SpanId == hour);
                 }
 
-                return result;
+                return query.ToList();
             }
         }
 
@@ -290,8 +275,12 @@ namespace Imms.WebManager
             dataItem.line_summary_data.production_code = activeWorkOrder.PartNo;
             dataItem.line_summary_data.production_name = activeWorkOrder.PartNo;
             dataItem.line_summary_data.production_order_no = activeWorkOrder.OrderNo;
-            dataItem.line_summary_data.uph = 30;
             dataItem.line_summary_data.person_qty = this.GetLineOperatorCount(lineNo);
+            if (dataItem.line_summary_data.person_qty == 0)
+            {
+                dataItem.line_summary_data.person_qty = 3;
+            }
+            dataItem.line_summary_data.uph = (activeWorkOrder.QtyBad + activeWorkOrder.QtyGood) / dataItem.line_summary_data.person_qty / 10;
         }
 
         private int GetLineOperatorCount(string lineNo)
@@ -311,8 +300,7 @@ namespace Imms.WebManager
                 {
                     return null;
                 }
-
-                return this.dbContext.Set<Workorder>().Where(x => x.OrderNo == orderNo).FirstOrDefault();
+                return this.dbContext.Set<Workorder>().First(x => x.OrderNo == orderNo);
             }
         }
     }

@@ -176,7 +176,7 @@ create table mes_org
     org_name                   varchar(50)       not null,
     org_type                   varchar(20)       not null,
          
-    parent_id                  int               not null default 0,
+    parent_id                  bigint            not null default 0,
     gid                        int               not null default 0,
     did                        int               not null default 0,
          
@@ -293,7 +293,6 @@ create table mes_line_product_summary_datespan
 
     primary key(record_id)
 );
-
 
 create procedure MES_Light(
     @GID             int,

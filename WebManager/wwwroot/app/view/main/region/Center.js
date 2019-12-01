@@ -1,7 +1,6 @@
 Ext.define('app.view.main.region.Center', {
 	extend: 'Ext.tab.Panel',
-	alias: 'widget.maincenter',
-	requires: ["app.view.imms.rpt.rptProductionOrderProgress.RptProductionOrderProgressGrid"],
+	alias: 'widget.maincenter',	
 	uses: ['app.ux.ButtonTransparent'],
 
 	initComponent: function () {
@@ -32,25 +31,15 @@ Ext.define('app.view.main.region.Center', {
 							width:80,
 							margin:"5 5 5 5",
 							handler:function(){
-								var summaryGrid = this.up("maincenter").down("app_view_imms_rpt_rptProductionOrderProgress_RptProductionOrderProgressGrid");
-								summaryGrid.store.load();								
+													
 							}
 						}
 					]
 				},
 				{
 					region: "center",
-					xtype: "app_view_imms_rpt_rptProductionOrderProgress_RptProductionOrderProgressGrid",
-					height: "100%",
-					filter:function(){
-						return {
-							L: "productDate",
-							O: "=",
-							R: Ext.util.Format.date(new Date(), 'Y/m/d')
-						};
-					},
-					hideDefeaultPagebar:true,
-					hideDefaultToolbar:true,
+					xtype: "panel",
+					height: "100%",					
 				}
 			]
 		}];

@@ -1,25 +1,19 @@
 Ext.define("app.view.imms.org.workstation.WorkstationDetailForm", {
-    extend: "app.ux.TrackableFormPanel",
+    extend: "Ext.form.Panel",
     xtype: "imms_org_workstation_WorkstationDetailForm",
-
     width: 400,
     bodyPadding: 5,
+    layout: "anchor",
     defaults: {
-        labelWidth: 100
+        layout: "anchor",
+        anchor: "100%",
     },
     items: [
         {
             name: "parentId",
             xtype: "hidden"
-        },{
-            name: "parentCode",
-            xtype: "hidden"
         },
         {
-            name: "parentName",
-            xtype: "hidden"
-        },
-         {
             name: "orgCode",
             xtype: "textfield",
             fieldLabel: "工位代码",
@@ -36,61 +30,54 @@ Ext.define("app.view.imms.org.workstation.WorkstationDetailForm", {
             enforceMaxLength: true,
             width: 380
         }, {
-            name: "wocgCode",
+            name: "gid",
             xtype: "textfield",
-            fieldLabel: "工作中心组",
-            allowBlank: false,
-            maxLength: 50,
-            enforceMaxLength: true,
-            width: 380
-        },{
-            name: "rfidControllerId",
-            xtype: "textfield",
-            fieldLabel: "Rfid控制器编号",
+            fieldLabel: "组号",
             allowBlank: false,
             maxLength: 3,
             enforceMaxLength: true,
             width: 180
         }, {
-            name: "rfidTerminatorId",
+            name: "did",
             xtype: "textfield",
-            fieldLabel: "Rfid工位机编号",
+            fieldLabel: "机号",
             allowBlank: false,
             maxLength: 3,
             enforceMaxLength: true,
             width: 180
-        }, {
-             name: "rfidTemplateIndex",
-            xtype: "textfield",
-            fieldLabel: "显示模板编号",
-            allowBlank: false,
-            maxLength: 3,
-            enforceMaxLength: true,
-            width: 180
-        }, {
-             name: "autoReportCount",
-            xtype: "textfield",
-            fieldLabel: "自动工序数",
-            allowBlank: false,
-            maxLength: 3,
-            enforceMaxLength: true,
-            width: 180
-        },      
+        },
         {
-            name: "description",
-            xtype: "textarea",
-            fieldLabel: "备注",
-            width: 380
+            xtype: "container",
+            layout: "hbox",
+            margin: '0 0 3 ',
+            items: [
+                {
+                    name: "defectReportType",
+                    xtype: "textfield",
+                    fieldLabel: "不良汇报方式",
+                    allowBlank: false,
+                    maxLength: 3,
+                    enforceMaxLength: true,
+                    width: 180
+                }, { xtype: "label", text: "3.按键汇报  9.光电汇报" }
+            ]
+        },
+        {
+            name: "seq",
+            xtype: "textfield",
+            fieldLabel: "顺序",
+            allowBlank: false,
+            maxLength: 3,
+            enforceMaxLength: true,
+            width: 180
         }
     ],
-    onRecordLoad:function(config){
-        if (config.dataMode == app.ux.data.DataMode.INSERT && config.seq == app.ux.data.DataOperationSeq.BEFORE){
+    onRecordLoad: function (config) {
+        if (config.dataMode == app.ux.data.DataMode.INSERT && config.seq == app.ux.data.DataOperationSeq.BEFORE) {
             var record = config.record;
             var grid = config.grid;
-            
-            record.set("parentId", grid.store.workshop.get("recordId"));
-            record.set("parentCode", grid.store.workshop.get("orgCode"));
-            record.set("parentName", grid.store.workshop.get("orgName"));
+
+            record.set("parentId", grid.store.parent.get("recordId"));
         }
     }
 });

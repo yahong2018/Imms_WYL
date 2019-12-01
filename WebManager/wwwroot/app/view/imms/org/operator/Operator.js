@@ -5,11 +5,10 @@ Ext.define("app.view.imms.org.operator.Operator", {
     "app.model.imms.org.WorkshopModel","app.store.imms.org.WorkshopStore"],
     uses: ["app.view.imms.org.operator.OperatorDetailForm"],
     columns: [
-        { dataIndex: "orgCode", text: "车间编号", width: 100 },
-        { dataIndex: "orgName", text: "车间名称", width: 100 },
+        { dataIndex: "orgCode", text: "产线", width: 100 },
         { dataIndex: "employeeId", text: "工号", width: 100 },
         { dataIndex: "employeeName", text: "姓名", width: 100 },
-        { dataIndex: "employeeCardNo", text: "工卡号", width: 100 },
+        { dataIndex: "title", text: "职位", width: 100 },        
     ],
 
     constructor:function(config){

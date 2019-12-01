@@ -144,6 +144,7 @@ INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) V
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'UPDATE', '修改');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'DELETE', '删除');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'IMPORT', '导入');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'START', '开工');
 
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_02', 'RUN', '运行');
 

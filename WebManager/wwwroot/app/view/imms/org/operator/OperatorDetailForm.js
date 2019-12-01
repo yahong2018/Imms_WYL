@@ -17,7 +17,7 @@ Ext.define("app.view.imms.org.operator.OperatorDetailForm", {
         {
             name: "orgId",
             xtype: "combobox",
-            fieldLabel: "所属车间",
+            fieldLabel: "所属产线",
             width: 380,
             valueField: "recordId",
             displayField: "orgName",

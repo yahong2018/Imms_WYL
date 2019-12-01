@@ -15,5 +15,19 @@ using NPOI.SS.UserModel;
 
 namespace Imms.WebManager.Controllers
 {
-   
+    [Route("api/imms/mfc/workorder")]
+    public class WorkorderController : SimpleCRUDController<Workorder>
+    {
+        public WorkorderController()
+        {
+            this.Logic = new WorkorderLogic();
+        }
+
+        [Route("start"), HttpPost]
+        public BusinessException Start([FromBody]Workorder item)
+        {           
+             (this.Logic as WorkorderLogic).StartWorkder(item);
+             return new BusinessException(GlobalConstants.EXCEPTION_CODE_NO_ERROR);
+        }
+    }
 }

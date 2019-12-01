@@ -40,10 +40,10 @@ namespace Imms.Mes.Data.Domain
         public string LineNo { get; set; }
         public string WorkorderNo { get; set; }
         public string PartNo { get; set; }
-        public string LastUpdateTime { get; set; }
-        public string GID { get; set; }
-        public string DID { get; set; }
-        public string UpdateStatus { get; set; }
+        public DateTime LastUpdateTime { get; set; }
+        public int GID { get; set; }
+        public int DID { get; set; }
+        public int UpdateStatus { get; set; }
     }
 
     // public class LineProductSummaryDate : Entity<long>

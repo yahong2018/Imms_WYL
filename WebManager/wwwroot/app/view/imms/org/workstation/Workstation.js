@@ -9,13 +9,11 @@ Ext.define("app.view.imms.org.workstation.Workstation", {
     
     columns: [
         { dataIndex: "orgCode", text: "工位代码", width: 100 },
-        { dataIndex: "orgName", text: "工位名称", width: 200 },
-        { dataIndex: "wocgCode", text: "工作中心组", width: 200 },
-        { dataIndex: "rfidTemplateIndex", text: "显示模板编号", width: 150 },
-        { dataIndex: "rfidControllerId", text: "Rfid控制器编号", width: 150 },
-        { dataIndex: "rfidTerminatorId", text: "Rfid工位机编号", width: 150 },
-        { dataIndex: "autoReportCount", text: "自动工序数", width: 150 },
-        { dataIndex: "description", text: "备注", flex: 1 }
+        { dataIndex: "orgName", text: "工位名称", width: 150 },                
+        { dataIndex: "gid", text: "组号", width: 120 },
+        { dataIndex: "did", text: "机号", width: 120 },
+        { dataIndex: "defectReportType", text: "不良汇报方式", width: 150 },        
+        { dataIndex: "seq", text: "顺序", width: 150 },        
     ],
     constructor: function (config) {       
         var configBase = {

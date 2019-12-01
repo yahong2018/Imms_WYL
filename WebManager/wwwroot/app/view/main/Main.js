@@ -6,8 +6,7 @@ Ext.define('app.view.main.Main', {
 	],
 
 	uses: ['app.view.main.region.Center', 'app.view.main.region.Top',
-		'app.view.main.region.Bottom', 'app.view.main.menu.MainMenuTree',
-		"app.model.imms.mfc.ProductSummaryModel", "app.store.imms.mfc.ProductSummaryStore"
+		'app.view.main.region.Bottom', 'app.view.main.menu.MainMenuTree',		
 	],
 
 	controller: {
@@ -27,7 +26,7 @@ Ext.define('app.view.main.Main', {
 
 	startTask: function () {
 		var mainView = this;
-		mainView.getViewModel().set('system.name', "爱三(佛山)汽车配件有限公司智能制造平台");
+		mainView.getViewModel().set('system.name', "威雅利实业有限公司智能制造平台");
 
 		Ext.TaskManager.start({
 			interval: 1000,

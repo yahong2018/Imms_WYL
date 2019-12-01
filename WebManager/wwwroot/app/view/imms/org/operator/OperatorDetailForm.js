@@ -1,64 +1,86 @@
 Ext.define("app.view.imms.org.operator.OperatorDetailForm", {
-    extend: "app.ux.TrackableFormPanel",
+    extend: "Ext.form.Panel",
     xtype: "imms_org_operator_OperatorDetailForm",
-    width: 400,
+    width: 430,
     bodyPadding: 5,
     defaults: {
         labelWidth: 70
     },
+    layout: "vbox",
     items: [
         {
-            name: "orgCode",
-            xtype: "hidden"
-        }, {
-            name: "orgName",
+            name: "recordId",
             xtype: "hidden"
         },
         {
-            name: "orgId",
-            xtype: "combobox",
-            fieldLabel: "所属产线",
-            width: 380,
-            valueField: "recordId",
-            displayField: "orgName",
-            store: Ext.create({ xtype: "imms_org_WorkshopStore", autoLoad: true, pageSize: 0 }),
-            listeners: {
-                change: function (self, newValue, oldValue, eOpts) {
-                    var form = self.up("imms_org_operator_OperatorDetailForm");
-                    var orgCode = form.down("[name='orgCode']");
-                    var orgName = form.down("[name='orgName']");
-
-                    var record = self.getSelectedRecord();
-                    if (record != null) {
-                        orgCode.setValue(record.get("orgCode"));
-                        orgName.setValue(record.get("orgName"));
+            name: "pic",
+            xtype: "hidden"
+        },
+        {
+            xtype: "container",
+            layout: "hbox",
+            items: [
+                {
+                    xtype: "container",
+                    items: [
+                        {
+                            name: "orgCode",
+                            xtype: "textfield",
+                            fieldLabel: "所属产线",
+                            width: 250,
+                            allowBlank: false
+                        }, {
+                            name: "empId",
+                            xtype: "textfield",
+                            fieldLabel: "工号",
+                            allowBlank: false,
+                            maxLength: 10,
+                            enforceMaxLength: true,
+                            width: 250
+                        }, {
+                            name: "empName",
+                            xtype: "textfield",
+                            fieldLabel: "姓名",
+                            allowBlank: false,
+                            maxLength: 20,
+                            enforceMaxLength: true,
+                            width: 250,
+                        },
+                        {
+                            name: "title",
+                            xtype: "textfield",
+                            fieldLabel: "工作岗位",
+                            allowBlank: false,
+                            maxLength: 20,
+                            enforceMaxLength: true,
+                            width: 250,
+                        }
+                    ]
+                },
+                {
+                    xtype: 'box',
+                    width: 120,
+                    height: 150,
+                    margin: "5 10 5 10",
+                    name: "pic",
+                    autoEl: {
+                        tag: 'img',
+                        src: 'upload/operators/W01/W01L01/1_C00001_张三_拉长.jpg'
                     }
                 }
-            }
+            ]
         }, {
-            name: "employeeId",
-            xtype: "textfield",
-            fieldLabel: "工号",
-            allowBlank: false,
-            maxLength: 10,
-            enforceMaxLength: true,
-            width: 380
-        }, {
-            name: "employeeName",
-            xtype: "textfield",
-            fieldLabel: "姓名",
-            allowBlank: false,
-            maxLength: 20,
-            enforceMaxLength: true,
-            width: 380,
-        }, {
-            name: "employeeCardNo",
-            xtype: "textfield",
-            fieldLabel: "工卡号",
-            allowBlank: false,
-            maxLength: 10,
-            enforceMaxLength: true,
-            width: 380
+            xtype: "filefield",
+            fieldLabel: "照片文件",
+            width: 400,
+            labelWidth: 100
         }
-    ]
+    ],
+    onRecordLoad: function (config) {
+        if (config.dataMode == app.ux.data.DataMode.INSERT) {
+            this.down("[name='pic']").autoEl.src = "";
+        } else {
+            this.down("[name='pic']").autoEl.src = config.record.get("pic");
+        }
+    }
 });

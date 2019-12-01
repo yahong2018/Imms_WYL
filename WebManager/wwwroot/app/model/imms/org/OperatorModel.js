@@ -1,11 +1,11 @@
 Ext.define("app.model.imms.org.OperatorModel", {
-    extend: "app.model.TrackableModel",
+    extend: "app.model.EntityModel",
     fields: [
-        { name: "orgName", type: "string" },
-        { name: "orgId", type: "int" },
         { name: "orgCode", type: "string" },
-        { name: "employeeId", type: "string" },
-        { name: "employeeName", type: "string" },
-        { name: "employeeCardNo", type: "string" },
+        { name: "empId", type: "string" },
+        { name: "empName", type: "string" },
+        { name: "title", type: "string" },
+        { name: "pic", type: "string" },
+        { name: "seq", type: "int" },
     ]
 });

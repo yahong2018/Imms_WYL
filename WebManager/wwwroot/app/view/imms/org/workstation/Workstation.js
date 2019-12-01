@@ -6,18 +6,27 @@ Ext.define("app.view.imms.org.workstation.Workstation", {
 
     hideDefeaultPagebar: true,
     hideSearchBar: true,
-    
+
     columns: [
         { dataIndex: "orgCode", text: "工位代码", width: 100 },
-        { dataIndex: "orgName", text: "工位名称", width: 150 },                
+        { dataIndex: "orgName", text: "工位名称", width: 150 },
         { dataIndex: "gid", text: "组号", width: 120 },
         { dataIndex: "did", text: "机号", width: 120 },
-        { dataIndex: "defectReportType", text: "不良汇报方式", width: 150 },        
-        { dataIndex: "seq", text: "顺序", width: 150 },        
+        {
+            dataIndex: "defectReportMethod", text: "不良汇报方式", width: 150, renderer: function (v) {
+                if (v == 3) {
+                    return "3.按键汇报";
+                } else if (v == 9) {
+                    return "9.光感汇报";
+                }
+            }
+        },
+        { dataIndex: "seq", text: "顺序", width: 150 },
     ],
-    constructor: function (config) {       
+
+    constructor: function (config) {
         var configBase = {
-            store: Ext.create({ xtype: 'imms_org_WorkstationStore',autoLoad:false }),
+            store: Ext.create({ xtype: 'imms_org_WorkstationStore', autoLoad: false }),
             detailFormClass: 'imms_org_workstation_WorkstationDetailForm',
             detailWindowTitle: '工位管理'
         }

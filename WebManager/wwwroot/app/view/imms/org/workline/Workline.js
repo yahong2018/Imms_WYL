@@ -1,17 +1,20 @@
 Ext.define("app.view.imms.org.workline.Workline", {
     extend: "app.ux.dbgrid.DbGrid",
-    xtype: "org_workline_Workline",
-    requires: ["app.model.imms.org.WorklineModel", "app.store.imms.org.WorklineStore"],
+    xtype: "org_workline_Workline",    
     uses: ["app.view.imms.org.workline.WorklineDetailForm"],
     hideDefeaultPagebar: true,
     hideSearchBar: true,
 
     columns: [
-        { dataIndex: "orgCode", text: "车间代码", width: 120 },
-        { dataIndex: "orgName", text: "车间名称", width: 200 },      
+        { dataIndex: "orgCode", text: "产线编号", width: 120 },
+        { dataIndex: "orgName", text: "产线名称", width: 200 },      
         { dataIndex: "gid", text: "组号", width: 120 },
         { dataIndex: "did", text: "机号", width: 120 },              
     ],
+    additionToolbarItems: [
+        '-',
+        { text: '产线板', handler: 'openLineKanban', privilege: "KANBAN_LINE" },
+    ],    
     constructor: function (config) {
         var configBase = {
             detailFormClass: 'imms_org_workline_WorklineDetailForm',
@@ -33,6 +36,6 @@ Ext.define("app.view.imms.org.workline.Workline", {
     },
 
     listeners: {
-        beforeselect: 'gridSelectionChanged',
+        beforeselect: 'worklineGridSelectionChanged',
     }
 });

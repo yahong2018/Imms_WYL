@@ -26,7 +26,7 @@ namespace Imms.Mes.Data.Domain
         public string WorkStationName { get { return base.OrgName; } set { base.OrgName = value; } }
 
         public int Seq { get; set; }
-        public int WorkstationType { get; set; }
+        public int DefectReportMethod { get; set; }
     }
 
     public partial class Operator : Entity<long>
@@ -36,10 +36,10 @@ namespace Imms.Mes.Data.Domain
         public string EmpName { get; set; }
         public string Title { get; set; }
         public string Pic { get; set; }
+        public int Seq { get; set; }
 
         public static readonly string ROLE_WORKSHOP_OPERATOR = "WORKSHOP_OPERATOR";
     }
-
 
     public class OperatorConfigure : EntityConfigure<Operator>
     {
@@ -54,6 +54,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.EmpName).HasColumnName("emp_name");
             builder.Property(e => e.Title).HasColumnName("title");
             builder.Property(e => e.Pic).HasColumnName("pic");
+            builder.Property(e => e.Seq).HasColumnName("seq");
         }
     }
 
@@ -73,7 +74,7 @@ namespace Imms.Mes.Data.Domain
         {
             ImmsDbContext.RegisterEntityTable<Workline>("mes_org");
             builder.Ignore(e => e.LineCode);
-            builder.Ignore(e => e.LineName);        
+            builder.Ignore(e => e.LineName);
         }
     }
 
@@ -87,7 +88,7 @@ namespace Imms.Mes.Data.Domain
             builder.Ignore(e => e.WorkStationName);
 
             builder.Property(e => e.Seq).HasColumnName("seq");
-            builder.Property(e => e.WorkstationType).HasColumnName("workstation_type");
+            builder.Property(e => e.DefectReportMethod).HasColumnName("defect_report_method");
         }
     }
 

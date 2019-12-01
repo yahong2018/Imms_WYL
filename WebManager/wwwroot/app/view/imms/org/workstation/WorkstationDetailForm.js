@@ -52,14 +52,14 @@ Ext.define("app.view.imms.org.workstation.WorkstationDetailForm", {
             margin: '0 0 3 ',
             items: [
                 {
-                    name: "defectReportType",
+                    name: "defectReportMethod",
                     xtype: "textfield",
                     fieldLabel: "不良汇报方式",
                     allowBlank: false,
                     maxLength: 3,
                     enforceMaxLength: true,
                     width: 180
-                }, { xtype: "label", text: "3.按键汇报  9.光电汇报" }
+                }, { xtype: "label",margin:"8 20 5 5", text: "3.按键汇报  9.光电汇报" }
             ]
         },
         {

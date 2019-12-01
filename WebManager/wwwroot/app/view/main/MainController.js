@@ -1,8 +1,6 @@
 Ext.define('app.view.main.MainController', {
 	extend: 'Ext.app.ViewController',
-
 	uses: ['app.view.main.region.ChangePasswordWindow', 'Ext.window.MessageBox', 'Ext.window.Toast', 'app.ux.Utils', 'app.ux.GlobalVars'],
-
 	alias: 'controller.main',
 
 	changePassword: function () {
@@ -17,6 +15,17 @@ Ext.define('app.view.main.MainController', {
 		if (!className) {
 			return;
 		}
+		debugger;
+
+		var strParameters = menuData.get("parameters");
+		if (strParameters != "") {
+			var parameter = Ext.JSON.decode(strParameters);
+			if (parameter.target) {
+				window.open(className, parameter.target);
+				return;
+			}
+		}
+
 		var desktopContainer = this.getView().down('maincenter');
 		var xtype = className.replace(/\./g, "_");
 		var theTab = desktopContainer.down(xtype);
@@ -31,17 +40,17 @@ Ext.define('app.view.main.MainController', {
 				}));
 
 			var programId = menuData.get("recordId");
-			app.ux.Utils.applyPrivileges({ programId: programId, model: 0,component:theTab});
-			
+			app.ux.Utils.applyPrivileges({ programId: programId, model: 0, component: theTab });
+
 			if (theTab.applyPrivileges) {
 				theTab.applyPrivileges({ programId: programId, model: 0 });
 			}
 		}
-		desktopContainer.setActiveTab(theTab);		
+		desktopContainer.setActiveTab(theTab);
 	},
 
 	hiddenTopBottom: function () {
-	    this.getView().down('maintop').hide();
+		this.getView().down('maintop').hide();
 		this.getView().down('mainbottom').hide();
 		if (!this.showButton) {
 			this.showButton = Ext.widget('button', {
@@ -81,11 +90,11 @@ Ext.define('app.view.main.MainController', {
 		app.ux.Utils.ajaxRequest({
 			url: 'home/currentLogin',
 			async: false,
-			successCallback: function (result) {			
+			successCallback: function (result) {
 				app.ux.GlobalVars.currentLogin = result;
 				app.ux.GlobalVars.systemTitle = "爱三(佛山)汽车配件有限公司智能制造平台";
 
-                me.getView().getViewModel().set('user.company', result.company);
+				me.getView().getViewModel().set('user.company', result.company);
 				me.getView().getViewModel().set('user.name', result.userName + '(' + result.userCode + ')');
 			}
 		});

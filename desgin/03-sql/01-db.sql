@@ -134,7 +134,7 @@ INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) V
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status)VALUES ('SYS03','SYS03', '生产管理', '', 2, '',  '', '0xf0ae',0);
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03', 'RUN', '运行');
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_01', 'SYS03_01', '生产计划', 'app.view.imms.mfc.workorder.Workorder', 1, '', 'SYS03', '0xf03a',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_02', 'SYS03_02', '生产报工', 'app.view.imms.mfc.workorderActual.WorkorderActaul', 2, '', 'SYS03', '0xf0cb',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_02', 'SYS03_02', '生产实绩', 'app.view.imms.mfc.workorderActual.WorkorderActaul', 2, '', 'SYS03', '0xf0cb',0);
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_03', 'SYS03_03', '产线板', 'kanban/line.cshtml', 3, '{"target":"_blank"}', 'SYS03', '0xf0cb',0);
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_04', 'SYS03_04', '工厂板', 'kanban/workshop.cshtml', 4, '{"target":"_blank"}', 'SYS03', '0xf218',0);
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_05', 'SYS03_05', '总厂板', 'kanban/factory.cshtml', 5, '{"target":"_blank"}', 'SYS03', '0xf00e',0);
@@ -182,7 +182,7 @@ create table mes_org
     did                        int               not null default 0,
          
     seq                        int               not null,
-    defect_report_type         int               not null default 0,  -- 不良汇报方式:  3.按键报不良 9. 光感报不良     
+    defect_report_method       int               not null default 0,  -- 不良汇报方式:  3.按键报不良 9. 光感报不良     
 
     primary key(record_id)
 );
@@ -195,6 +195,7 @@ create table mes_operator
     emp_name          varchar(50)      not null,
     title             varchar(20)      not null,
     pic               varchar(255)     not null,
+    seq               int              not null,
 
     primary key(record_id)
 );
@@ -325,7 +326,7 @@ create procedure MES_ProcessDeviceData
 )as
 begin
     declare @DefectCode varchar(20),@WorkstationCode varchar(20), @WorkorderNo varchar(20),@LineNo varchar(20);
-    declare @RecordType int,@SpanId int,@DefectReportType int,@ProductDate datetime,@PartNo varchar(50);
+    declare @RecordType int,@SpanId int,@DefectReportMethod int,@ProductDate datetime,@PartNo varchar(50);
     declare @QtyGood int,@QtyBad int,@QtyPlan int,@lock int;
 
     select @RespData ='',@DefectCode='',@WorkstationCode='',@WorkorderNo='',@RecordType=-1,@SpanId=-1,
@@ -333,7 +334,7 @@ begin
 
     if (@ReqDataType = 9) and (@ReqData<>'8203800000002AE3')
         return;
-   
+	   
 	if (select count(*)  from mes_org w
     where w.org_type = 'ORG_WORK_STATION'
       and w.gid = @GID
@@ -347,7 +348,7 @@ begin
 		return;
 	end;
 
-    select @WorkstationCode = org_code, @DefectReportType = defect_report_type
+    select @WorkstationCode = org_code, @DefectReportMethod = defect_report_method
         from mes_org where gid = @GID and did = @DID;
     if(@WorkstationCode = '')begin
 		set @RespData ='2|1|4';
@@ -374,7 +375,7 @@ begin
 
     -- --------------------------------------------------------------------------------------------------------
     set @RecordType = 0 ; -- 默认为良品报工
-    if (@DefectReportType = @ReqDataType) begin
+    if (@DefectReportMethod = @ReqDataType) begin
         set @RecordType = 1;  -- 不良品报工
     end;
     
@@ -436,7 +437,7 @@ begin
         update mes_active_workorder
         set last_update_time = GETDATE(), update_status = 2
         where workorder_no = @WorkorderNo;         
-    commit tran;
+    commit tran;    
 end;
 
 

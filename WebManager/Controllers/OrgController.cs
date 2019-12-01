@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Imms.Data;
@@ -5,8 +6,10 @@ using Imms.Data.Domain;
 using Imms.Mes.Data;
 using Imms.Mes.Data.Domain;
 using Imms.WebManager.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Imms.WebManager.Controllers
 {
@@ -19,6 +22,15 @@ namespace Imms.WebManager.Controllers
         }
     }
 
+    [Route("api/imms/org/workline")]
+    public class WorklineController : SimpleCRUDController<Workline>
+    {
+        public WorklineController()
+        {
+            this.Logic = new SimpleCRUDLogic<Workline>();
+        }
+    }
+
     [Route("api/imms/org/workstation")]
     public class WorkstationController : SimpleCRUDController<Workstation>
     {
@@ -26,30 +38,16 @@ namespace Imms.WebManager.Controllers
         {
             this.Logic = new SimpleCRUDLogic<Workstation>();
         }
-
-        [Route("getStationByWorkshop")]
-        public ExtJsResult GetStationByWorkshop(long workshopId)
-        {
-            IQueryCollection query = this.HttpContext.Request.Query;
-
-            int page = int.Parse(query["page"][0]);
-            int start = int.Parse(query["start"][0]);
-            int limit = int.Parse(query["limit"][0]);
-            FilterExpression expression = new FilterExpression()
-            {
-                L = "parentId",
-                O = "=",
-                R = workshopId.ToString()
-            };
-
-            ExtJsResult result = Logic.GetAllWithExtResult(page, start, limit, new FilterExpression[] { expression });
-            return result;
-        }
     }
 
     [Route("api/imms/org/operator")]
     public class OperatorController : SimpleCRUDController<Operator>
     {
-        public OperatorController() => this.Logic = new SimpleCRUDLogic<Operator>();        
+        private readonly IHostingEnvironment _host = null;        
+        public OperatorController(IHostingEnvironment host)
+        {
+            this._host = host;
+            this.Logic = new OperatorLogic(host);
+        }
     }
 }

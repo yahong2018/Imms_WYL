@@ -8,7 +8,7 @@ Ext.define("app.view.imms.org.workline.WorklineDetailForm", {
          {
             name: "orgCode",
             xtype: "textfield",
-            fieldLabel: "产线代码",
+            fieldLabel: "产线编号",
             allowBlank: false,
             maxLength: 20,
             enforceMaxLength: true,

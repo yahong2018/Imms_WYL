@@ -188,8 +188,8 @@ namespace Imms.Data
         protected virtual void BeforeUpdate(T item, DbContext dbContext) { }
         protected virtual void AfterUpdate(T item, DbContext dbContext) { }
 
-        protected virtual void BeforeDelete(List<T> item, DbContext dbContext) { }
-        protected virtual void AfterDelete(List<T> item, DbContext dbContext) { }
+        protected virtual void BeforeDelete(List<T> items, DbContext dbContext) { }
+        protected virtual void AfterDelete(List<T> items, DbContext dbContext) { }
 
         protected virtual List<T> DoGetData(string sql, DbContext dbContext)
         {

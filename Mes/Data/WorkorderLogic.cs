@@ -32,6 +32,17 @@ namespace Imms.Mes.Data
                         dbContext.Add(active);
                         isUpdate = false;
                     }
+                    else
+                    {
+                        Workorder oldOrder = dbContext.Set<Workorder>().Where(x => x.OrderNo == active.WorkorderNo).First();
+                        if (oldOrder.OrderStatus != 255 && oldOrder.OrderNo != workorder.OrderNo)
+                        {
+                            oldOrder.OrderStatus = 255;
+                            oldOrder.TimeEndActual = DateTime.Now;
+
+                            GlobalConstants.ModifyEntityStatus<Workorder>(oldOrder, dbContext);
+                        }
+                    }
                     active.WorkorderNo = workorder.OrderNo;
                     active.LastUpdateTime = DateTime.Now;
                     active.GID = 0;

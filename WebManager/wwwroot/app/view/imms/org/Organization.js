@@ -1,11 +1,11 @@
 Ext.define("app.view.imms.org.Organization", {
     extend: 'Ext.panel.Panel',
     xtype: 'app_view_imms_org_Organization',
-    requires: ["app.model.imms.org.WorklineModel","app.model.imms.org.WorkstationModel",
-        "app.view.imms.org.workline.Workline", "app.view.imms.org.workstation.Workstation","app.view.imms.org.OrganizationController"
-    ],   
-    controller:{
-        type:"imms_org_OrganizationController"
+    requires: ["app.model.imms.org.OrgModel", "app.store.imms.org.OrgStore", "app.view.imms.org.OrganizationController",
+        "app.view.imms.org.workshop.Workshop", "app.view.imms.org.workline.Workline", "app.view.imms.org.workstation.Workstation"
+    ],
+    controller: {
+        type: "imms_org_OrganizationController"
     },
     layout: 'fit',
     items: [
@@ -16,11 +16,21 @@ Ext.define("app.view.imms.org.Organization", {
             items: [
                 {
                     region: 'west',
-                    xtype: 'org_workline_Workline',
                     width: 400,
+                    xtype: "org_workshop_Workshop"
                 }, {
                     region: 'center',
-                    xtype: 'org_workstation_Workstation'
+                    layout: "border",
+                    items: [
+                        {
+                            region: "north",
+                            xtype: 'org_workline_Workline',
+                            height: 300
+                        }, {
+                            region: "center",
+                            xtype: 'org_workstation_Workstation'
+                        }
+                    ]
                 }
             ]
         }

@@ -1,6 +1,7 @@
 Ext.define('app.view.imms.mfc.workorder.WorkorderController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.imms_mfc_workorder_WorkorderController',
+    uses:["app.ux.excel.Importer"],
     startOrder: function () {
         var url = "api/imms/mfc/workorder/start";
         var grid = this.getView();
@@ -28,6 +29,7 @@ Ext.define('app.view.imms.mfc.workorder.WorkorderController', {
         });
     },
     importOrder: function () {
-        alert("importOrder")
+        var importer = Ext.create({ xtype:"app_ux_excel_impoter"});
+        importer.show();
     }
 });

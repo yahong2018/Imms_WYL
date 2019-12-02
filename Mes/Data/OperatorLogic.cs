@@ -69,7 +69,7 @@ namespace Imms.Mes.Data
             }
             string path = System.IO.Path.GetDirectoryName(fileName);
             if (!System.IO.Directory.Exists(path))
-            {
+            { 
                 System.IO.Directory.CreateDirectory(path);
             }
             using (var stream = System.IO.File.Create(fileName))

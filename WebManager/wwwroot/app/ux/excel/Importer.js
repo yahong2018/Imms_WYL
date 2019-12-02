@@ -1,28 +1,44 @@
 Ext.define("app.ux.excel.Importer", {
-    extend: "Ext.form.Panel",
+    extend: "Ext.window.Window",
     xtype: "app_ux_excel_impoter",
     requires: [
-        'Ext.layout.container.Card',"app.ux.excel.ImportViewModel","app.ux.excel.ImportController"
-        ,"app.ux.excel.cards.FileSelectPanel","app.ux.excel.cards.DataDisplayAndSettingPanel",
-        "app.ux.excel.cards.ImportFinishedPanel"
+        'Ext.layout.container.Card', "app.ux.excel.ImporterViewModel", "app.ux.excel.ImporterController"
+        , "app.ux.excel.cards.File",  "app.ux.excel.cards.FieldSetting",
+        "app.ux.excel.cards.RowSetting", "app.ux.excel.cards.Complete"        
     ],
-    viewModel:{
-        type:"excelImportViewModel",
+    viewModel: {
+        type: "excelImportViewModel",
     },
-    controller:{
-        type:"excelImportController"        
+    controller: {
+        type: "excelImporterController"
     },
-    layout: "card",
+    closeAction: 'destroy',
+    modal: true,
+    maximizable: true,
+    minimizable: true,    
+    height:500,
+    width:800,
+    bodyPadding:10,
+    layout:"fit",
+    title:"文件选择",
     items: [
         {
-            xtype:"app_ux_excel_cards_FileSelectPanel"
-        },{
-            xtype:"app_ux_excel_cards_DataDisplayAndSettingPanel"
-        },{
-            xtype:"app_ux_excel_cards_ImportFinishedPanel"
+            xtype: "form",
+            layout: "card",
+            items: [
+                {
+                    xtype: "app_ux_excel_cards_File"
+                }, {
+                    xtype: "app_ux_excel_cards_FieldSetting"
+                },{
+                    xtype: "app_ux_excel_cards_RowSetting"
+                },{
+                    xtype: "app_ux_excel_cards_Complete"
+                }
+            ]
         }
     ],
-    bbar: [
+    buttons: [
         {
             text: "取消",
             handler: "cancelButtonClick"
@@ -30,12 +46,18 @@ Ext.define("app.ux.excel.Importer", {
         "->",
         {
             text: "上一步",
-            buttonId:"btnPrev",
+            buttonId: "btnPrev",
+            disabled:true,
             handler: "prevButtonClick"
         }, {
             text: "下一步",
-            buttonId:"btnNext",
+            buttonId: "btnNext",
             handler: "nextButtonClick"
         }
-    ],   
+    ],
+    listeners:{
+        afterrender:function(){
+           // this.maximize(true);
+        }
+    }
 });

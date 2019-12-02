@@ -1,8 +1,7 @@
+using System;
 using System.Drawing;
 using System.IO;
-using NPOI.HSSF.UserModel;
-using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
+using OfficeOpenXml;
 using QRCoder;
 
 namespace Imms.Core
@@ -23,9 +22,9 @@ namespace Imms.Core
 
     public class ExcelHelper
     {
-        public static void ImportExcel(string fileName, string worksheetName, int firstRowNum, int lastRowNum, ExcelRowProcessHandler rowHandler)
+        public static void ImportExcel(string fileName, string worksheetName, int firstRowNum, int lastRowNum, int firstColumn, int lastColumn, ExcelRowProcessHandler proessHandler)
         {
-            if (rowHandler == null)
+            if (proessHandler == null)
             {
                 return;
             }
@@ -33,70 +32,52 @@ namespace Imms.Core
             using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
                 string fileType = Path.GetExtension(fileName).ToLower();
-                ExcelHelper.ImportExcel(fs, fileType, worksheetName, firstRowNum, lastRowNum, rowHandler);
+                ExcelHelper.ImportExcel(fs, fileType, worksheetName, firstRowNum, lastRowNum, firstColumn, lastColumn, proessHandler);
                 fs.Close();
             }
         }
 
-        public static void ImportExcel(FileStream fs, string fileType, string worksheetName, int firstRowNum, int lastRowNum, ExcelRowProcessHandler rowHandler)
+        public static void ImportExcel(FileStream fs, string fileType, string worksheetName, int firstRowNum, int lastRowNum, int firstColumn, int lastColumn, ExcelRowProcessHandler proessHandler)
         {
-            IWorkbook workbook;
-            if (fileType == ".xlsx") { workbook = new XSSFWorkbook(fs); } else if (fileType == ".xls") { workbook = new HSSFWorkbook(fs); } else { workbook = null; }
-            if (workbook == null)
+            using (ExcelPackage package = new ExcelPackage(fs))
             {
-                return;
+                try
+                {
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets[worksheetName];
+                    ExcelHelper.ImportExcel(worksheet, firstRowNum, lastRowNum, firstColumn, lastColumn, proessHandler);
+                }
+                catch (Exception e)
+                {
+                    GlobalConstants.DefaultLogger.Error("导入Excel出错：" + e.Message);
+                    GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                }
             }
-
-            ExcelHelper.ImportExcel(workbook, worksheetName, firstRowNum, lastRowNum, rowHandler);
         }
 
-        public static void ImportExcel(IWorkbook workbook, string worksheetName, int firstRowNum, int lastRowNum, ExcelRowProcessHandler rowHandler)
+        public static void ImportExcel(ExcelWorksheet sheet, int firstRowNum, int lastRowNum, int firstColumn, int lastColumn, ExcelRowProcessHandler proessHandler)
         {
-            ISheet sheet = workbook.GetSheet(worksheetName);
-            if (sheet == null)
-            {
-                return;
-            }
-            ExcelHelper.ImportExcel(sheet, firstRowNum, lastRowNum, rowHandler);
-        }
-
-        public static void ImportExcel(ISheet sheet, int firstRowNum, int lastRowNum, ExcelRowProcessHandler rowHandler)
-        {
-            if (firstRowNum == -1)
-            {
-                firstRowNum = sheet.FirstRowNum;
-            }
-            if (lastRowNum == -1)
-            {
-                lastRowNum = sheet.LastRowNum;
-            }
-
             for (int i = firstRowNum; i < lastRowNum; i++)
             {
-                IRow row = sheet.GetRow(i);
-                rowHandler(row);
+                ExcelCellValue[] cellValues = new ExcelCellValue[lastColumn - firstColumn];
+                for (int j = firstColumn, n = 0; j < lastColumn; j++, n++)
+                {
+                    cellValues[n].Column = j;
+                    cellValues[n].Value = sheet.Cells[i, j].Value;
+                }
+
+                if (proessHandler != null)
+                {
+                    proessHandler(cellValues);
+                }
             }
         }
-
-        public static object GetCellValue(IRow row, int column,bool isDate=false)
-        {
-            ICell cell = row.GetCell(column);
-            CellType cellType = cell.CellType;
-
-            switch (cellType)
-            {
-                case CellType.Boolean: return cell.BooleanCellValue;
-                case CellType.Numeric:
-                  if(isDate) return cell.DateCellValue; else return cell.NumericCellValue;
-                case CellType.String: return cell.StringCellValue;                
-                default: return "";
-            }
-        }
-
     }
 
-    public delegate void ExcelRowProcessHandler(IRow row);
+    public delegate void ExcelRowProcessHandler(ExcelCellValue[] cellValues);
+
+    public class ExcelCellValue
+    {
+        public int Column { get; set; }
+        public object Value { get; set; }
+    }
 }
-
-
- 

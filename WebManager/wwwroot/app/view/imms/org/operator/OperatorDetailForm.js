@@ -54,6 +54,15 @@ Ext.define("app.view.imms.org.operator.OperatorDetailForm", {
                             maxLength: 20,
                             enforceMaxLength: true,
                             width: 250,
+                        },
+                        {
+                            name: "seq",
+                            xtype: "textfield",
+                            fieldLabel: "显示顺序",
+                            allowBlank: false,
+                            maxLength: 20,
+                            enforceMaxLength: true,
+                            width: 250,
                         }
                     ]
                 },
@@ -62,7 +71,7 @@ Ext.define("app.view.imms.org.operator.OperatorDetailForm", {
                     width: 120,
                     height: 150,
                     margin: "5 10 5 10",
-                    name: "pic",
+                    name: "disp_pic",
                     autoEl: {
                         tag: 'img',
                         src: 'upload/operators/W01/W01L01/1_C00001_张三_拉长.jpg'
@@ -77,10 +86,9 @@ Ext.define("app.view.imms.org.operator.OperatorDetailForm", {
         }
     ],
     onRecordLoad: function (config) {
-        if (config.dataMode == app.ux.data.DataMode.INSERT) {
-            this.down("[name='pic']").autoEl.src = "";
-        } else {
-            this.down("[name='pic']").autoEl.src = config.record.get("pic");
+        if (config.seq == app.ux.data.DataOperationSeq.AFTER) {
+            debugger;
+            this.down("[name='disp_pic']").getEl().dom.src = config.record.get("pic");
         }
     }
 });

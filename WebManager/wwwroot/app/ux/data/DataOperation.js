@@ -114,16 +114,6 @@ Ext.define("app.ux.data.DataOperation", {
         }
 
         form.loadRecord(record);
-
-        if (form.onRecordLoad) {
-            form.onRecordLoad({
-                dataMode: app.ux.data.DataMode.INSERT,
-                seq: app.ux.data.DataOperationSeq.AFTER,
-                record: record,
-                grid: grid
-            });
-        }
-
         var currentTopWindow = Ext.app.Application.instance.getMainView().down('maincenter').getActiveTab();
         var programId = currentTopWindow.menuData.get('programId');
 
@@ -134,6 +124,15 @@ Ext.define("app.ux.data.DataOperation", {
         }
 
         detailWindow.show();
+
+        if (form.onRecordLoad) {
+            form.onRecordLoad({
+                dataMode: app.ux.data.DataMode.INSERT,
+                seq: app.ux.data.DataOperationSeq.AFTER,
+                record: record,
+                grid: grid
+            });
+        }        
     },
     
     doEdit: function (config) {
@@ -171,15 +170,6 @@ Ext.define("app.ux.data.DataOperation", {
             idField.readOnly = true;
         }
 
-        if (form.onRecordLoad) {
-            form.onRecordLoad({
-                dataMode: app.ux.data.DataMode.EDIT,
-                seq: app.ux.data.DataOperationSeq.AFTER,
-                record: record,
-                grid: grid
-            });
-        }
-
         var currentTopWindow = Ext.app.Application.instance.getMainView().down('maincenter').getActiveTab();
         var programId = currentTopWindow.menuData.get('programId');
         var canUpdate = app.ux.Utils.hasPrivilege({ programId: programId, privilegeCode: "UPDATE" });
@@ -189,6 +179,15 @@ Ext.define("app.ux.data.DataOperation", {
         }
 
         detailWindow.show();
+
+        if (form.onRecordLoad) {
+            form.onRecordLoad({
+                dataMode: app.ux.data.DataMode.EDIT,
+                seq: app.ux.data.DataOperationSeq.AFTER,
+                record: record,
+                grid: grid
+            });
+        }        
     },
 
     showDetailWindow: function (grid, rowindex, e) {     
@@ -217,15 +216,6 @@ Ext.define("app.ux.data.DataOperation", {
             idField.readOnly = true;
         }
 
-        if (form.onRecordLoad) {
-            form.onRecordLoad({
-                dataMode: app.ux.data.DataMode.BROWSE,
-                seq: app.ux.data.DataOperationSeq.AFTER,
-                record: record,
-                grid: grid
-            });
-        }
-
         var currentTopWindow = Ext.app.Application.instance.getMainView().down('maincenter').getActiveTab();
         var programId = currentTopWindow.menuData.get('programId');
 
@@ -236,6 +226,15 @@ Ext.define("app.ux.data.DataOperation", {
         }
 
         detailWindow.show();
+
+        if (form.onRecordLoad) {
+            form.onRecordLoad({
+                dataMode: app.ux.data.DataMode.BROWSE,
+                seq: app.ux.data.DataOperationSeq.AFTER,
+                record: record,
+                grid: grid
+            });
+        }        
     },
 
     doSearch: function (column, operator, value) {

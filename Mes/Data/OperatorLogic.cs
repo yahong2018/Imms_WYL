@@ -9,7 +9,7 @@ namespace Imms.Mes.Data
     public class OperatorLogic : SimpleCRUDLogic<Operator>
     {
         private readonly IHostingEnvironment _host = null;
-        private string[] _imgExtentions = new string[] { "jpg", "jpeg", "bmp", "png", "gif" };
+        private string[] _imgExtentions = new string[] { ".jpg", ".jpeg", ".bmp", ".png", ".gif" };
         public OperatorLogic(IHostingEnvironment host)
         {
             this._host = host;
@@ -61,13 +61,18 @@ namespace Imms.Mes.Data
             }
 
             string workshopCode = dbContext.Set<Workshop>().Where(x => x.RecordId == workline.ParentId).Select(x => x.OrgCode).Single();
-            string wwwPath = $"upload/operators/{workshopCode}/{workline.OrgCode}/{item.EmpId}_{item.EmpName}.{ext}";
-            string filePath = $"{webRootPath}/{wwwPath}";
-            if (System.IO.File.Exists(filePath))
+            string wwwPath = $"upload/operators/{workshopCode}/{workline.OrgCode}/{item.EmpId}_{item.EmpName}{ext}";
+            string fileName = $"{webRootPath}/{wwwPath}";
+            if (System.IO.File.Exists(fileName))
             {
-                System.IO.File.Delete(filePath);
+                System.IO.File.Delete(fileName);
             }
-            using (var stream = System.IO.File.Create(filePath))
+            string path = System.IO.Path.GetDirectoryName(fileName);
+            if (!System.IO.Directory.Exists(path))
+            {
+                System.IO.Directory.CreateDirectory(path);
+            }
+            using (var stream = System.IO.File.Create(fileName))
             {
                 file.CopyTo(stream);
             }

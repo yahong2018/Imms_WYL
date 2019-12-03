@@ -14,21 +14,23 @@ Ext.define("app.ux.excel.ImporterController", {
         var viewModel = this.getViewModel();
         var activeIndex = viewModel.get("navigator.activeIndex");
         if (activeIndex == 3) {
-            this.doComplete();
+            this.doImport();
             return;
         }
         if (activeIndex == 0 && !this.verifyWorksheet()) {
             return;
         }
-        if (activeIndex == 1 && !this.verifySettings()) {
+        if (activeIndex == 1 && !this.verifyFieldsSettings()) {
+            return;
+        }
+        if (activeIndex == 2 && !this.verifyRowSettings()) {
             return;
         }
 
         this.doCardNavigation(1);
     },
 
-    doCardNavigation: function (incr) {
-        debugger;
+    doCardNavigation: function (incr) {        
         var viewModel = this.getViewModel();
         var window = this.getView();
         var cardForm = window.down("form");
@@ -45,17 +47,19 @@ Ext.define("app.ux.excel.ImporterController", {
             window.down('[buttonId="btnNext"]').setText("下一步");
         }
     },
-    doComplete: function () {
+    doImport: function () {
         this.getView().close();
     },
     uploadFile: function () {
-
     },
 
     verifyWorksheet: function () {
         return true;
     },
-    verifySettings: function () {
+    verifyFieldsSettings: function () {
+        return true;
+    },
+    verifyRowSettings:function(){
         return true;
     }
 });

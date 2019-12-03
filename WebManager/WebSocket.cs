@@ -280,7 +280,17 @@ namespace Imms.WebManager
             {
                 dataItem.line_summary_data.person_qty = 3;
             }
-            dataItem.line_summary_data.uph = (activeWorkOrder.QtyBad + activeWorkOrder.QtyGood) / dataItem.line_summary_data.person_qty / 10;
+
+            int hour = DateTime.Now.Hour;
+            if (hour > 8)
+            {
+                hour = hour - 8;
+            }
+            else
+            {
+                hour = hour + 4;
+            }
+            dataItem.line_summary_data.uph = (activeWorkOrder.QtyBad + activeWorkOrder.QtyGood) / dataItem.line_summary_data.person_qty / hour;
         }
 
         private int GetLineOperatorCount(string lineNo)

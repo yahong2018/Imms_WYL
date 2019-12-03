@@ -24,9 +24,18 @@ namespace Imms.WebManager.Controllers
 
         [Route("start"), HttpPost]
         public BusinessException Start([FromBody]Workorder item)
-        {           
-             (this.Logic as WorkorderLogic).StartWorkder(item);
-             return new BusinessException(GlobalConstants.EXCEPTION_CODE_NO_ERROR);
+        {
+            (this.Logic as WorkorderLogic).StartWorkder(item);
+            return new BusinessException(GlobalConstants.EXCEPTION_CODE_NO_ERROR);
+        }
+    }
+
+    [Route("api/imms/mfc/workorderActual")]
+    public class WorkorderActualController : SimpleCRUDController<WorkorderActual>
+    {
+        public WorkorderActualController()
+        {
+            this.Logic = new SimpleCRUDLogic<WorkorderActual>();
         }
     }
 }

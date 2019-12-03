@@ -12,6 +12,7 @@ Ext.define("app.view.imms.org.workshop.Workshop", {
     additionToolbarItems: [
         '-',
         { text: '工场板', handler: 'openWorkshopKanban', privilege: "KANBAN_WORKSHOP" },
+        { text: '总场板', handler: 'openPlantKanban', privilege: "KANBAN_PLANT" },
     ],
     constructor: function (config) {
         var configBase = {

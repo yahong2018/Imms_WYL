@@ -1,6 +1,6 @@
 Ext.define("app.view.imms.mfc.workorder.Workorder", {
     extend: "app.ux.dbgrid.DbGrid",
-    xtype: "app_view_imms_mfc_Workorder_Workorder",
+    xtype: "app_view_imms_mfc_workorder_Workorder",
     requires: ["app.model.imms.mfc.WorkorderModel", "app.store.imms.mfc.WorkorderStore", "app.view.imms.mfc.workorder.WorkorderController"],
     uses: ["app.view.imms.mfc.workorder.WorkorderDetailForm"],
 

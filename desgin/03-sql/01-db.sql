@@ -76,13 +76,19 @@ CREATE TABLE mes_program_privilege
 
     PRIMARY KEY (record_id)
 );
+truncate table mes_system_user;
+truncate table mes_system_role;
+truncate table mes_role_user;
+truncate table mes_system_program;
+truncate table mes_program_privilege;
+truncate table mes_role_privilege;
 
-declare @user_id,@role_id bigint;
+declare @user_id bigint,@role_id bigint;
 
-INSERT INTO mes_system_user (user_code, user_name, pwd, user_status, email, last_login_time) VALUES ('C00001', '刘永红', 'e10adc3949ba59abbe56e057f20f883e', 0, 'liuyonghong@zhxh.com', NULL);
+INSERT INTO mes_system_user (user_code, user_name, pwd, user_status, email, last_login_time,is_online) VALUES ('C00001', '刘永红', 'e10adc3949ba59abbe56e057f20f883e', 0, 'liuyonghong@zhxh.com', NULL,0);
 set @user_id = SCOPE_IDENTITY();
 
-INSERT INTO messystem_role (role_code, role_name) VALUES ('admin', '系统管理员');
+INSERT INTO mes_system_role (role_code, role_name) VALUES ('admin', '系统管理员');
 set @role_id=SCOPE_IDENTITY ();
 
 INSERT INTO mes_role_user (role_id, user_id) VALUES (@role_id, @user_id);
@@ -113,46 +119,35 @@ INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) V
 
 -- ----------------------------------------------------------------------------------------------------------------------
 
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status)VALUES ('SYS02','SYS02', '组织架构', '', 1, '', '', '0xf0e8',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status)VALUES ('SYS02','SYS02', '看板系统', '', 1, '', '', '0xf0ae',0);
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02', 'RUN', '运行');
 
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_01', 'SYS02_01', '组织结构', 'app.view.imms.org.Organization', 0, '',  'SYS02', '0xf1ad',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_03', 'SYS02_03', '操作员管理', 'app.view.imms.org.operator.Operator',2, '', 'SYS02', '0xf2be',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_01', 'SYS02_01', '组织结构', 'app.view.imms.org.Organization', 0, '',  'SYS02', '0xf0e8',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_02', 'SYS02_02', '操作员管理', 'app.view.imms.org.operator.Operator',1, '', 'SYS02', '0xf2be',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_03', 'SYS03_03', '生产计划', 'app.view.imms.mfc.workorder.Workorder', 2, '', 'SYS02', '0xf03a',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_04', 'SYS03_04', '生产实绩', 'app.view.imms.mfc.workorderActual.WorkorderActual', 3, '', 'SYS02', '0xf0cb',0);
 
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'RUN', '运行');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'INSERT', '新增');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'UPDATE', '修改');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'DELETE', '删除');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'KANBAN_WORKSHOP', '工场板');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'KANBAN_PLANT', '总场板');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'KANBAN_LINE', '产线板');
+
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_02', 'RUN', '运行');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_02', 'INSERT', '新增');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_02', 'UPDATE', '修改');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_02', 'DELETE', '删除');
 
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_03', 'RUN', '运行');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_03', 'INSERT', '新增');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_03', 'UPDATE', '修改');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_03', 'DELETE', '删除');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_03', 'IMPORT', '导入');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_03', 'START', '开工');
 
--- ----------------------------------------------------------------------------------------------------------------------
-
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status)VALUES ('SYS03','SYS03', '生产管理', '', 2, '',  '', '0xf0ae',0);
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03', 'RUN', '运行');
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_01', 'SYS03_01', '生产计划', 'app.view.imms.mfc.workorder.Workorder', 1, '', 'SYS03', '0xf03a',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_02', 'SYS03_02', '生产实绩', 'app.view.imms.mfc.workorderActual.WorkorderActaul', 2, '', 'SYS03', '0xf0cb',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_03', 'SYS03_03', '产线板', 'kanban/line.cshtml', 3, '{"target":"_blank"}', 'SYS03', '0xf0cb',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_04', 'SYS03_04', '工厂板', 'kanban/workshop.cshtml', 4, '{"target":"_blank"}', 'SYS03', '0xf218',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS03_05', 'SYS03_05', '总厂板', 'kanban/factory.cshtml', 5, '{"target":"_blank"}', 'SYS03', '0xf00e',0);
-
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'RUN', '运行');
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'INSERT', '新增');
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'UPDATE', '修改');
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'DELETE', '删除');
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'IMPORT', '导入');
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_01', 'START', '开工');
-
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_02', 'RUN', '运行');
-
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_03', 'RUN', '运行');
-
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_04', 'RUN', '运行');
-
-INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS03_05', 'RUN', '运行');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_04', 'RUN', '运行');
 
 -- --------------------------------------------------------------------------------------------------------------------
 

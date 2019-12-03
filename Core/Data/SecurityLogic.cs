@@ -93,6 +93,7 @@ namespace Imms.Security.Data
                 }
 
                 result.LastLoginTime = DateTime.Now;
+                result.IsOnline = 1;
                 dbContext.SaveChanges();
             });
             return result;

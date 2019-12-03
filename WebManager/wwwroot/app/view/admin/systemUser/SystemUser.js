@@ -23,7 +23,7 @@ Ext.define('app.view.admin.systemUser.SystemUser', {
             }
         },
         {
-            dataIndex: 'online', text: '是否在线', renderer: function (value) {
+            dataIndex: 'isOnline', text: '是否在线', renderer: function (value) {
                 if (value === false) {
                     return "0.离线";
                 } else {

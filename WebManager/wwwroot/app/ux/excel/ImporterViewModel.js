@@ -14,6 +14,23 @@ Ext.define("app.ux.excel.ImporterViewModel", {
                 "数据设置",
                 "完成导入"
             ]
+        },
+        session:{
+            sessionId:-1,
+            worksheet:"sheet1",
+            fieldRow:1,
+            fields:[
+                {
+                    system: "lineNo",
+                    excel: "Line",
+                    column: 0
+                },
+                {
+                    system:"orderNo",
+                    excel:"JobNum",
+                    column:2
+                },
+            ]
         }
     }
 });

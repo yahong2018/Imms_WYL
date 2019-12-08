@@ -45,6 +45,7 @@ namespace Imms.Mes.Data
                     }
                     active.WorkorderNo = workorder.OrderNo;
                     active.LastUpdateTime = DateTime.Now;
+                    active.PartNo = workorder.PartNo;
                     active.GID = 0;
                     active.DID = 0;
                     active.UpdateStatus = 0;

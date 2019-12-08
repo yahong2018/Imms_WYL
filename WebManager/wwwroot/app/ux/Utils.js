@@ -69,7 +69,7 @@ Ext.define('app.ux.Utils', {
         var programId = config.programId;
         var model = config.model;
         var comp = config.component;
-        debugger;
+       // debugger;
 
         for (var i = 0; i < privilegeList.length; i++) {
             if (privilegeList[i].programId != programId) {

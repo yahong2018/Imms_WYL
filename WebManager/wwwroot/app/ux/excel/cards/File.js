@@ -16,13 +16,15 @@ Ext.define("app.ux.excel.cards.File", {
             }
         },
         {
-            xtype: "container",
+            xtype: "form",
             layout: "hbox",
             items: [
                 {
                     xtype: 'fileuploadfield',
                     hideLabel: true,
-                    flex: 0.7
+                    name:"file",
+                    flex: 0.7,
+                    allowBlank:false,
                 }, {
                     xtype: "button",
                     text: "上传",

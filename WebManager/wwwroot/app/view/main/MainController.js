@@ -14,7 +14,7 @@ Ext.define('app.view.main.MainController', {
 		var className = menuData.get('url');
 		if (!className) {
 			return;
-		}	
+		}			
 
 		var strParameters = menuData.get("parameters");
 		if (strParameters != "") {

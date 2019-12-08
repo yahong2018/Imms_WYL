@@ -5,7 +5,11 @@ Ext.define("app.view.imms.org.workline.WorklineDetailForm", {
     width: 400,
     bodyPadding: 5,
     items: [
-         {
+        {
+            name: "parentId",
+            xtype: "hidden"
+        },
+        {
             name: "orgCode",
             xtype: "textfield",
             fieldLabel: "产线编号",
@@ -21,18 +25,26 @@ Ext.define("app.view.imms.org.workline.WorklineDetailForm", {
             maxLength: 50,
             enforceMaxLength: true,
             width: 380
-        },        
+        },
         {
-            name:"gid",
-            xtype:"textfield",
-            fieldLabel:"组号",
-            width:380,
+            name: "gid",
+            xtype: "textfield",
+            fieldLabel: "组号",
+            width: 380,
         },
         {
             name: "did",
             xtype: "textfield",
             fieldLabel: "机号",
             width: 380,
-        }         
-    ]
+        }
+    ],
+    onRecordLoad: function (config) {
+        if (config.dataMode == app.ux.data.DataMode.INSERT && config.seq == app.ux.data.DataOperationSeq.BEFORE) {
+            var record = config.record;
+            var grid = config.grid;
+
+            record.set("parentId", grid.store.parent.get("recordId"));
+        }
+    }
 });

@@ -77,6 +77,10 @@ Ext.define("app.ux.data.DataOperation", {
         if (this.createDetailWindowFun) {
             detailWindow = this.createDetailWindowFun();
         } else {
+            if (!this.detailFormClass){
+                return null;
+            }
+
             detailWindow = Ext.create(this.insertDetailWindowClass, {
                 dataMode: dataMode,
                 store: this.store,
@@ -100,6 +104,10 @@ Ext.define("app.ux.data.DataOperation", {
         }
         var record = this.store.createModel({});
         var detailWindow = this.createDetailWindow(app.ux.data.DataMode.INSERT);
+        if(!detailWindow){
+            return;
+        }
+
         detailWindow.title = '新增 — [' + this.detailWindowTitle + ']';
 
         var form = detailWindow.getFormCmp();
@@ -152,6 +160,10 @@ Ext.define("app.ux.data.DataOperation", {
         }
 
         var detailWindow = this.createDetailWindow(app.ux.data.DataMode.EDIT);
+        if (!detailWindow) {
+            return;
+        }
+
         detailWindow.title = '修改 — [' + this.detailWindowTitle + ']';
         var form = detailWindow.getFormCmp();
 
@@ -198,6 +210,10 @@ Ext.define("app.ux.data.DataOperation", {
 
         record = record[0];
         var detailWindow = this.createDetailWindow(app.ux.data.DataMode.BROWSE);
+        if (!detailWindow) {
+            return;
+        }
+
         detailWindow.title = this.detailWindowTitle;
 
         var form = detailWindow.getFormCmp();

@@ -31,22 +31,22 @@ namespace Imms.WebManager
             if (dataPushThread == null)
             {
                 dataPushThread = new System.Threading.Thread(() =>
-                           {
-                               while (!Terminated)
-                               {
-                                   try
-                                   {
-                                       this.PushData();
-                                   }
-                                   catch (Exception e)
-                                   {
-                                       GlobalConstants.DefaultLogger.Error(e.Message);
-                                       GlobalConstants.DefaultLogger.Debug(e.StackTrace);
-                                   }
+                    {
+                        while (!Terminated)
+                        {
+                            try
+                            {
+                                this.PushData();
+                            }
+                            catch (Exception e)
+                            {
+                                GlobalConstants.DefaultLogger.Error(e.Message);
+                                GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                            }
 
-                                   Thread.Sleep(1000 * 10); // 10秒钟发布1次数据
-                               }
-                           });
+                            Thread.Sleep(1000 * 10); // 10秒钟发布1次数据
+                        }
+                    });
                 dataPushThread.Start();
             }
         }

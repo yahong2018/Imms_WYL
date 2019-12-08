@@ -27,10 +27,10 @@ namespace Imms.WebManager.Controllers
             Operator[] operators = CommonRepository.GetAllByFilter<Operator>(x => x.orgCode == lineNo && x.Seq != -1).OrderBy(x => x.Seq).Take(4).ToArray();
 
             OperatorItem[] OperatorList = new OperatorItem[]{
-                new OperatorItem(){DisplayName="拉长 张三",PicUrl="upload/operators/W01/W01L01/C00001_张三_拉长.jpg"},
-                new OperatorItem(){DisplayName="检测 李四",PicUrl="upload/operators/W01/W01L01/C00002_李四_测试.jpg"},
-                new OperatorItem(){DisplayName="外观 王五",PicUrl="upload/operators/W01/W01L01/C00003_王五_外观.jpg"},
-                new OperatorItem(){DisplayName="包装 赵大",PicUrl="upload/operators/W01/W01L01/C00004_赵大_包装.png"},
+                new OperatorItem(){DisplayName="拉长 张三",PicUrl=""},
+                new OperatorItem(){DisplayName="检测 李四",PicUrl=""},
+                new OperatorItem(){DisplayName="外观 王五",PicUrl=""},
+                new OperatorItem(){DisplayName="包装 赵大",PicUrl=""},
             };
 
             for (int i = 0; i < operators.Length && i < 4; i++)

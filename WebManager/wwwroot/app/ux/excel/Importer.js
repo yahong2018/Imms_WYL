@@ -51,7 +51,7 @@ Ext.define("app.ux.excel.Importer", {
             handler: "prevButtonClick"
         }, {
             text: "下一步",
-            buttonId: "btnNext",
+            buttonId: "btnNext",            
             handler: "nextButtonClick"
         }
     ],

@@ -17,19 +17,21 @@ Ext.define("app.ux.excel.ImporterViewModel", {
         },
         session: {
             sessionId: "",
-            activeSheet: 0,
+            activeSheet: -1,
             worksheets: ["sheet1", "sheet2", "sheet3"],
-            fieldRow: 1,
-            fields: [
+            fieldRowIndex: -1,
+            columnStartIndex:-1,
+            columnEndIndex:-1,
+            fieldMappings: [
                 {
-                    system: "lineNo",
-                    excel: "Line",
-                    column: 0
+                    systemField: "lineNo",
+                    excelField: "Line",
+                    columnIndex: 0
                 },
                 {
-                    system: "orderNo",
-                    excel: "JobNum",
-                    column: 2
+                    systemField: "orderNo",
+                    excelField: "JobNum",
+                    columnIndex: 2
                 },
             ]
         }

@@ -28,6 +28,7 @@ namespace Imms.WebManager.Controllers
     [Route("api/misc/excel")]
     public class ExcelImortController : Controller
     {
+        [Route("startImport")]
         public ImportSession StartImport(string target)
         {
             ImportSession result = new ImportSession();
@@ -40,14 +41,36 @@ namespace Imms.WebManager.Controllers
             return result;
         }
 
+        [Route("getExcelFields")]
+        public ImportSession GetExcelFields([FromBody]ImportSession session)
+        {
+            lock (sessionList)
+            {
+                sessionList[session.SessionId] = session;
+            }
+
+
+            return session;
+        }
+
         static readonly SortedList<Guid, ImportSession> sessionList = new SortedList<Guid, ImportSession>();
     }
 
     public class ImportSession
-    {        
+    {
         public Guid SessionId { get; set; }
         public int ActiveSheet { get; set; }
         public string[] Worksheets { get; set; }
-        public int FieldRow { get; set; }
+        public int FieldRowIndex { get; set; }
+        public int ColumnStartIndex { get; set; }
+        public int ColumnEndIndex { get; set; }
+        public FieldMapping[] FieldMappings { get; set; }
+    }
+
+    public class FieldMapping
+    {
+        public string ExcelField { get; set; }
+        public string SystemField { get; set; }
+        public int ColumnIndex { get; set; }
     }
 }

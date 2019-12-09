@@ -56,42 +56,82 @@ Ext.define("app.ux.excel.ImporterController", {
         var view = this.getView();
         var viewModel = this.getViewModel();
         var form = view.down('app_ux_excel_cards_File').down('form');
-        var targetTable = this.getViewModel().get("target.tableName");
-        if (!form.isValid()) {
-            form.submit({
-                url: "api/misc/excel/startImport?target=" + targetTable,
-                success: function (form, action) {
-                    var message = Ext.decode(action.response.responseText);
-
-                    //    {
-                    //        sessionId:123456,
-                    //        worksheets:[
-                    //            "sheet1",
-                    //            "sheet2",
-                    //            "sheet3"
-                    //        ]
-                    //    }
-
-                    var radioGroup = view.down('app_ux_excel_cards_File').down('worksheets');
-                    radioGroup.removeAll();
-                    for (var i = 0; i < message.worksheets.length; i++) {
-                        var item = Ext.create({ xtype: 'radiofield', boxLabel: message.worksheets[i], inputValue: i });
-                        radioGroup.add(item);
-                    }
-
-                    viewModel.set('session.sessionId', message.sessionId);
-                    viewModel.set('session.worksheets', message.worksheets);
-                }
-            });
+        if (!form.down('fileuploadfield').value) {
+            Ext.Msg.alert("系统提示","请先选择需要上传的文件!");
+            return;
         }
+        var targetTable = this.getViewModel().get("target.tableName");
+
+        form.submit({
+            url: "api/misc/excel/startImport?target=" + targetTable,
+            success: function (form, action) {
+                var message = Ext.decode(action.response.responseText);
+
+                //    {
+                //        sessionId:123456,
+                //        worksheets:[
+                //            "sheet1",
+                //            "sheet2",
+                //            "sheet3"
+                //        ]
+                //    }
+
+                var radioGroup = view.down('app_ux_excel_cards_File').down('radiogroup');
+                radioGroup.removeAll();
+                viewModel.set('session', message.data);
+
+                for (var i = 0; i < message.data.worksheets.length; i++) {
+                    var item = Ext.create({ xtype: 'radiofield', boxLabel: message.data.worksheets[i], inputValue: i });
+                    radioGroup.add(item);
+                }
+            }
+        });
     },
 
     verifyWorksheet: function () {
-        var radioGroup = this.getView().down('app_ux_excel_cards_File').down('worksheets');
-        var value = radioGroup.getValue();
-        this.getViewModel().set("session.activeSheet", value);
+        var view = this.getView();
+        var viewModel = this.getViewModel();        
+        var radioGroup = view.down('app_ux_excel_cards_File').down('radiogroup');    
+        var value = radioGroup.getValue().worksheets;
+        if (isNaN(value)){
+            Ext.Msg.alert("系统提示", "请选择需要导入的Worksheet !");
+            return false;
+        }
+        viewModel.set("session.activeSheet", value);
 
-        return value;
+        return true;
+    },
+
+    getExcelFields:function(){
+        debugger;
+        
+        var view = this.getView();
+        var fieldPanel = view.down("app_ux_excel_cards_FieldSetting");
+        
+        var rowIndex = fieldPanel.down("[name='field_row_index']").value;
+        var columnStartIndex = fieldPanel.down("[name='field_column_start_index']").value;
+        var columnEndIndex = fieldPanel.down("[name='field_column_end_index']").value;
+
+        if(isNaN(rowIndex) || isNaN(columnStartIndex) || isNaN(columnEndIndex)){
+            Ext.Msg.alert("系统提示","请设置正确的[字段行]和[列范围]!");
+
+            return;
+        }
+
+        var session = viewModel.get("session");
+        session.fieldRowIndex = rowIndex;
+        session.columnStartIndex = columnStartIndex;
+        session.columnEndIndex = columnEndIndex;
+        
+        app.ux.Utils.ajaxRequest({
+            url:"api/misc/excel/getExcelFields",
+            method:"POST",
+            jsonData:session,
+            successCallback: function (result, response, opts){
+                debugger;
+                viewModel.set('session', result);
+            }
+        });
     },
 
     verifyFieldsSettings: function () {

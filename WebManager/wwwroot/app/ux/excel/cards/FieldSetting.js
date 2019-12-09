@@ -41,7 +41,8 @@ Ext.define("app.ux.excel.cards.FieldSetting", {
                     xtype: "button",
                     text: "确定",
                     width: 100,
-                    margin: "0 0 0 10"
+                    margin: "0 0 0 10",
+                    handler:'getExcelFields'
                 }
             ]
         },
@@ -67,10 +68,10 @@ Ext.define("app.ux.excel.cards.FieldSetting", {
                     xtype: "grid",
                     border: true,
                     flex: 1,
-                    columns: [
-                        { xtype: 'rownumberer', width: 30 },
+                    selModel : new Ext.selection.CheckboxModel(),
+                    columns: [                        
+                        { dataIndex: "system_field", text: "系统字段", width: 300, menuDisabled: true, sortable: false, },
                         { dataIndex: "excel_field", text: "Excel 字段", width: 300, menuDisabled: true, sortable: false, },
-                        { dataIndex: "system_field", text: "系统字段", width: 300, menuDisabled: true, sortable: false, }
                     ],
                 },
             ]

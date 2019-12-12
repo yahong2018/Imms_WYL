@@ -291,148 +291,17 @@ create table mes_line_product_summary_datespan
     primary key(record_id)
 );
 
-create procedure MES_Light(
-    @GID             int,
-    @DID             int,
-    @Lamp            int
-)as
-begin
-    declare @data varchar(200),@DeviceCmdID int;
-    if @Lamp = 1 
-       set @data = '2|0|1|230|0E0100110000220000320000000074';  -- 红灯
-    else 
-       set @data = '2|0|1|230|0E0100120000220000310000000074';  -- 绿灯
-    
-    exec GetNewDeviceCmdID @DeviceCmdID=@DeviceCmdID OUTPUT;
-    insert into DeviceCmdList(DeviceCmdID,CmdType,GID,DID,CmdNumber,CmdContent,CmdMakeTime,RetryTimes)
-                       values(@DeviceCmdID,0,@GID,@DID,28,@data,GETDATE(),3);
-end;
-
-create procedure MES_ProcessDeviceData 
-    -- 1. 如果是按键，则读取品质代码表，进行不良报工
-    -- 2. 如果光感，则进行良品报工    
+create table mes_workstation_output
 (
-    @GID             int,
-    @DID             int,
-    @ReqDataType     int,
-    @ReqData         varchar(20),
-    @ReqTime         datetime,
-    @RespData        varchar(200)   output
-)as
-begin
-    declare @DefectCode varchar(20),@WorkstationCode varchar(20), @WorkorderNo varchar(20),@LineNo varchar(20);
-    declare @RecordType int,@SpanId int,@DefectReportMethod int,@ProductDate datetime,@PartNo varchar(50);
-    declare @QtyGood int,@QtyBad int,@QtyPlan int,@lock int;
+    record_id          bigint         identity(1,1),
+    workstation_code   varchar(20)    not null,
+    workorder_no       varchar(20)    not null,
+    qty_good           int            not null,
+    qty_bad            int            not null,
 
-    select @RespData ='',@DefectCode='',@WorkstationCode='',@WorkorderNo='',@RecordType=-1,@SpanId=-1,
-           @QtyGood = 0,@QtyBad = 0 ,@QtyPlan = 0;    
+    last_count_good    int            not null,
+    last_count_bad     int            not null,
 
-    if (@ReqDataType = 9) and (@ReqData<>'8203800000002AE3')
-        return;
-	   
-	if (select count(*)  from mes_org w
-    where w.org_type = 'ORG_WORK_STATION'
-      and w.gid = @GID
-      and w.did = @DID )>1 begin		
-		set @RespData = '2|1|4'; 
-        set @RespData = @RespData + '|210|0|129|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
-		set @RespData = @RespData + '|1|组号:' + cast(@GID as varchar(10)) + ',机号:' + cast(@DID as varchar(10)) +'|0';
-		set @RespData = @RespData + '|2|工位重复注册|0';			
-		set @RespData = @RespData + '|3|请联系管理员|0';        
-
-		return;
-	end;
-
-    select @WorkstationCode = org_code, @DefectReportMethod = defect_report_method
-        from mes_org where gid = @GID and did = @DID;
-    if(@WorkstationCode = '')begin
-		set @RespData ='2|1|4';
-		set @RespData = @RespData + '|210|0|129|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
-        set @RespData = @RespData + '|1|组号:' + cast(@GID as varchar(10)) + ',机号:' + cast(@DID as varchar(10)) +'|0';
-		set @RespData = @RespData + '|2|工位没有注册.|0';
-        set @RespData = @RespData + '|3|请联系管理员|0';
-
-        return;
-    end;
-    select top 1 @LineNo = L.org_code  from mes_org  L
-      where L.record_id = (
-        select parent_id from mes_org W where W.org_code = @WorkstationCode
-    );
-    select top 1 @WorkorderNo = workorder_no,@PartNo = part_no  from mes_active_workorder A
-        where A.line_no = @LineNo;
-    if @WorkorderNo = ''  begin
-        set @RespData='2|1|2';
-        set @RespData= @RespData + '|210|0|129|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
-        set @RespData= @RespData + '|1|还没有启用工单.|0';         
-
-        return;
-    end;
-
-    -- --------------------------------------------------------------------------------------------------------
-    set @RecordType = 0 ; -- 默认为良品报工
-    if (@DefectReportMethod = @ReqDataType) begin
-        set @RecordType = 1;  -- 不良品报工
-    end;
-    
-    if (@RecordType = 1)  and (@ReqDataType = 3 ) begin -- 通过按键进行不良品报工
-        select @DefectCode = defect_code from mes_defect where defect_code = @ReqData;
-        if  @DefectCode = '' begin
-		    set @RespData='2|1|2';
-			set @RespData= @RespData + '|210|0|129|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
-			set @RespData= @RespData + '|1|品质代码错误.|0';            
-
-            return;
-        end;
-    end;
-    -- --------------------------------------------------------------------------------------------------------
-    set @SpanId = DATEPART(hh,@ReqTime);
-    set @ProductDate = cast(CONVERT(varchar(10),@ReqTime,120) as datetime);   
-
-    insert into mes_workorder_actual(workorder_no,part_no,workstation_code,qty,record_type,defect_code,report_time) 
-         values(@WorkorderNo,@PartNo,@WorkstationCode,1,@RecordType,@DefectCode,@ReqTime);
-
-    if @RecordType =  0 begin
-        select @QtyGood = 1,@QtyBad = 0;
-    end else begin
-        select @QtyGood = 0,@QtyBad = 1;
-    end;
-
-    select @QtyPlan = qty_req from mes_workorder where line_no = @LineNo;
-    set @QtyPlan = isnull(@QtyPlan,0);
-    set @QtyPlan = @QtyPlan / 10;
-    set @QtyPlan = 100;
-
-    update mes_active_workorder
-       set gid = @GID,did = @DID,last_update_time = GETDATE(), update_status = 1
-    where workorder_no = @WorkorderNo;
-
-    begin tran;
-        select @lock = count(*) from mes_active_workorder with(rowlock,xlock)
-           where workorder_no = @WorkorderNo;
-                
-        if not exists(
-            select * from mes_line_product_summary_datespan
-               where line_no = @LineNo and workorder_no = @WorkorderNo 
-                 and product_date = @ProductDate and span_id = @SpanId
-        )
-            insert into mes_line_product_summary_datespan(line_no,workorder_no,part_no,product_date,span_id,qty_plan,qty_good,qty_bad)
-                 values(@LineNo,@WorkorderNo,@PartNo,@ProductDate,@SpanId,@QtyPlan, @QtyGood,@QtyBad);
-        else 
-            update mes_line_product_summary_datespan
-                set qty_good = qty_good + @QtyGood,
-                   qty_bad = qty_bad + @QtyBad
-            where line_no = @LineNo and workorder_no = @WorkorderNo 
-              and product_date = @ProductDate and span_id = @SpanId;
-        
-        update  mes_workorder
-           set qty_good = qty_good + @QtyGood,
-               qty_bad  = qty_bad + @QtyBad
-         where order_no = @WorkorderNo;
-
-        update mes_active_workorder
-        set last_update_time = GETDATE(), update_status = 2
-        where workorder_no = @WorkorderNo;         
-    commit tran;    
-end;
-
+    primary key(record_id)
+);
 

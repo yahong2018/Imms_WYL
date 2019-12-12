@@ -13,8 +13,8 @@ Ext.define("app.view.imms.mfc.workorder.Workorder", {
     additionToolbarItems: [
         '-',
         { text: '开工', handler: 'startOrder', privilege: "START" },
-        '-',
-        { text: '导入', handler: 'importOrder', privilege: "IMPORT" },
+        // '-',
+        // { text: '导入', handler: 'importOrder', privilege: "IMPORT" },
     ],
 
     constructor: function (config) {

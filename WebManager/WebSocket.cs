@@ -15,7 +15,7 @@ namespace Imms.WebManager
     public class LineKanbanHub : Hub
     {
         private SortedList<string, WebSocketClient> ConnectedIdList = new SortedList<string, WebSocketClient>();
-        private SortedList<string, DataItem> DataList = new SortedList<string, DataItem>();
+        private SortedList<string, KanbanLineData> DataList = new SortedList<string, KanbanLineData>();
         public bool Terminated { get; set; }
         private System.Threading.Thread dataPushThread;
         private DbContext dbContext;
@@ -44,7 +44,7 @@ namespace Imms.WebManager
                                 GlobalConstants.DefaultLogger.Debug(e.StackTrace);
                             }
 
-                            Thread.Sleep(1000 * 10); // 10秒钟发布1次数据
+                            Thread.Sleep(1000 * 1); // 1秒钟发布1次数据
                         }
                     });
                 dataPushThread.Start();
@@ -74,32 +74,14 @@ namespace Imms.WebManager
                     {
                         continue;
                     }
+                    KanbanLineData kabanData = DataList[client.LineNo];
+                    this.FillDetailItems(kabanData, client.LineNo);
+                    DetailItem detailItem = kabanData.line_detail_data[0];
 
-                    if (DataList[client.LineNo].line_detail_data == null)
-                    {
-                        continue;
-                    }
-                    int hour = Now.Hour;
-                    List<LineProductSummaryDateSpan> hourList = this.GetLineProductSummaryDateSpan(client.LineNo, hour, false);
-                    if (hour >= 20)
-                    {
-                        hour = 19;
-                    }
-                    if (hour < 8)
-                    {
-                        hour = 7;
-                    }
-                    DetailItem detailItem = DataList[client.LineNo].line_detail_data.Where(x => x.hour == hour + 1).Single();
-                    // detailItem.qty_plan = hourList.Sum(x => x.QtyPlan);
-                    detailItem.qty_good = hourList.Sum(x => x.QtyGood);
-                    detailItem.qty_bad = hourList.Sum(x => x.QtyBad);
-
-                    this.FillWorkorder(DataList[client.LineNo], client.LineNo);
-
-                    int planQty = (int)(Now.Minute * 1.66);
+                    int planQty = detailItem.qty_plan;
                     bool toggleLight = false;
                     int curLamp = 0;
-                    if (detailItem.qty_bad > 0 || (hour > 8 && detailItem.qty_good < planQty))
+                    if (detailItem.qty_bad > 0 || (DateTime.Now.Hour > 8 && detailItem.qty_good < planQty))
                     {//如果出现了品质问题或者进度落后，则亮红灯
                         if (client.Lamp != 1)
                         {
@@ -159,7 +141,7 @@ namespace Imms.WebManager
         public void RegisterClient(string lineNo)
         {
             string id = Context.ConnectionId;
-            DataItem theItem;
+            KanbanLineData theItem;
             lock (this)
             {
                 if (!this.ConnectedIdList.ContainsKey(id))
@@ -174,7 +156,7 @@ namespace Imms.WebManager
 
                     this.ConnectedIdList.Add(id, client);
 
-                    if (DateTime.Now.Hour < 9)  // 如果现在是在9:00之前，则先亮绿灯
+                    if ((DateTime.Now.Hour == 8) || (DateTime.Now.Hour == 20))  // 如果现在是在在班次的第1个小时内
                     {
                         this.LigthLamp(client, 1);
                     }
@@ -185,7 +167,7 @@ namespace Imms.WebManager
                 }
                 if (!DataList.ContainsKey(lineNo))
                 {
-                    theItem = new DataItem();
+                    theItem = new KanbanLineData();
                     DataList.Add(lineNo, theItem);
                     theItem.line_code = lineNo;
                 }
@@ -193,104 +175,111 @@ namespace Imms.WebManager
                 {
                     theItem = DataList[lineNo];
                 }
-                this.FillInitedItem(theItem, lineNo);
+                this.FillDetailItems(theItem, lineNo);
             }
 
             this.Clients.Client(id).SendAsync("OnServerData", theItem);
         }
 
-        private void FillInitedItem(DataItem dataItem, string lineNo)
+        private void FillDetailItems(KanbanLineData lineKanbanItem, string lineNo)
         {
-            int[] hours = new int[] { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
-            this.FillWorkorder(dataItem, lineNo);
+            int[] hours = new int[5];
+            DateTime currentTime = DateTime.Now;
+            for (int i = 0; i < hours.Length; i++)
+            {
+                int nHour = (currentTime.Hour - i);
+                if (nHour < 0)
+                {
+                    nHour = 24 + nHour;
+                }
+                hours[i] = nHour;
+            }
+            this.FillWorkorder(lineKanbanItem, lineNo);
 
-            dataItem.line_detail_data = new DetailItem[hours.Length];
-            DateTime curDate = DateTime.Now;
-            List<LineProductSummaryDateSpan> allList = this.GetLineProductSummaryDateSpan(lineNo, curDate.Hour, true);
+            lineKanbanItem.line_detail_data = new DetailItem[hours.Length];
+            List<LineProductSummaryDateSpan> allList = this.GetLineProductSummaryDateSpan(lineNo, hours[0], hours[4]);
             for (int i = 0; i < hours.Length; i++)
             {
                 DetailItem item = new DetailItem();
-                dataItem.line_detail_data[i] = item;
-                item.index = i - 1;
-                item.qty_plan = 100;
-                if (hours[i] == 20) //如果是20:00
+                lineKanbanItem.line_detail_data[i] = item;
+                if (i == 0)
                 {
-                    var dbItem = allList.Where(x => x.SpanId >= 20);
-                    item.qty_good = dbItem.Select(x => x.QtyGood).Sum();
-                    item.qty_bad = dbItem.Select(x => x.QtyBad).Sum();
-                }
-                else if (hours[i] == 8)
-                {
-                    var dbItem = allList.Where(x => x.SpanId < 8);
-                    item.qty_good = dbItem.Select(x => x.QtyGood).Sum();
-                    item.qty_bad = dbItem.Select(x => x.QtyBad).Sum();
+                    int qtyPlan = allList.Where(x => x.SpanId == hours[i]).Select(x => x.QtyPlan).Sum();
+                    if (qtyPlan == 0)
+                    {
+                        qtyPlan = lineKanbanItem.plan_qty;
+                    }
+                    item.qty_plan = (int)((currentTime.Minute + 1) * (qtyPlan / 60));
                 }
                 else
                 {
-                    item.qty_good = allList.Where(x => x.SpanId == hours[i] - 1).Select(x => x.QtyGood).Sum();
-                    item.qty_bad = allList.Where(x => x.SpanId == hours[i] - 1).Select(x => x.QtyBad).Sum();
+                    item.qty_plan = allList.Where(x => x.SpanId == hours[i]).Select(x => x.QtyPlan).Sum();
+                    if(item.qty_plan==0 && lineKanbanItem.time_start_actual.HasValue){
+                        item.qty_plan = lineKanbanItem.plan_qty;
+                    }
                 }
+
+                item.qty_good = allList.Where(x => x.SpanId == hours[i]).Select(x => x.QtyGood).Sum();
+                item.qty_bad = allList.Where(x => x.SpanId == hours[i]).Select(x => x.QtyBad).Sum();
+
                 item.hour = hours[i];
             }
         }
 
-        private List<LineProductSummaryDateSpan> GetLineProductSummaryDateSpan(string lineNo, int hour, bool all = false)
+        private List<LineProductSummaryDateSpan> GetLineProductSummaryDateSpan(string lineNo, int hourEnd, int hourStart)
         {
             DateTime now = DateTime.Now;
             DateTime productDate = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0);
             lock (this)
             {
-                if (all)
+                if (hourEnd > hourStart)
                 {
-                    return dbContext.Set<LineProductSummaryDateSpan>().Where(x => x.LineNo == lineNo && x.ProductDate == productDate).ToList();
-                }
-
-                IQueryable<LineProductSummaryDateSpan> query = null;
-                if (hour >= 20)
-                {
-                    query = dbContext.Set<LineProductSummaryDateSpan>().Where(x => x.LineNo == lineNo && x.ProductDate == productDate && x.SpanId >= 20);
-                }
-                else if (hour < 8)
-                {
-                    query = dbContext.Set<LineProductSummaryDateSpan>().Where(x => x.LineNo == lineNo && x.ProductDate == productDate && x.SpanId < 8);
+                    return dbContext.Set<LineProductSummaryDateSpan>().Where(
+                                    x => x.LineNo == lineNo
+                                    && x.ProductDate == productDate
+                                    && (x.SpanId >= hourStart && x.SpanId <= hourEnd))
+                            .ToList();
                 }
                 else
                 {
-                    query = dbContext.Set<LineProductSummaryDateSpan>().Where(x => x.LineNo == lineNo && x.ProductDate == productDate && x.SpanId == hour);
+                    DateTime prevDate = productDate.AddDays(-1);
+                    IQueryable<LineProductSummaryDateSpan> query = dbContext.Set<LineProductSummaryDateSpan>().Where(
+                            x => x.LineNo == lineNo
+                            && ((x.ProductDate == productDate && x.SpanId <= hourEnd)
+                               || (x.ProductDate == prevDate && x.SpanId >= hourStart)
+                            )
+                        );
+                    return query.ToList();
                 }
-
-                return query.ToList();
             }
         }
 
-        private void FillWorkorder(DataItem dataItem, string lineNo)
+        private void FillWorkorder(KanbanLineData lineKanbanData, string lineNo)
         {
-            dataItem.line_code = lineNo;
+            lineKanbanData.line_code = lineNo;
             Workorder activeWorkOrder = this.GetLineActiveWorkorder(lineNo);
             if (activeWorkOrder == null)
             {
                 return;
             }
-            dataItem.line_summary_data = new SummaryItem();
-            dataItem.line_summary_data.production_code = activeWorkOrder.PartNo;
-            dataItem.line_summary_data.production_name = activeWorkOrder.PartNo;
-            dataItem.line_summary_data.production_order_no = activeWorkOrder.OrderNo;
-            dataItem.line_summary_data.person_qty = this.GetLineOperatorCount(lineNo);
-            if (dataItem.line_summary_data.person_qty == 0)
+            lineKanbanData.line_summary_data = new SummaryItem();
+            lineKanbanData.line_summary_data.production_code = activeWorkOrder.PartNo;
+            lineKanbanData.line_summary_data.production_name = activeWorkOrder.PartNo;
+            lineKanbanData.line_summary_data.production_order_no = activeWorkOrder.OrderNo;
+            lineKanbanData.line_summary_data.person_qty = this.GetLineOperatorCount(lineNo);
+            if (lineKanbanData.line_summary_data.person_qty == 0)
             {
-                dataItem.line_summary_data.person_qty = 3;
+                lineKanbanData.line_summary_data.person_qty = 4;
             }
+            lineKanbanData.line_summary_data.uph = (activeWorkOrder.QtyBad + activeWorkOrder.QtyGood) / lineKanbanData.line_summary_data.person_qty;
 
-            int hour = DateTime.Now.Hour;
-            if (hour > 8)
+            lineKanbanData.plan_qty = activeWorkOrder.QtyReq;
+            int hours = activeWorkOrder.TimeEndPlan.Subtract(activeWorkOrder.TimeStartPlan).Hours;
+            if (hours > 0)
             {
-                hour = hour - 8;
+                lineKanbanData.plan_qty = lineKanbanData.plan_qty / hours;
             }
-            else
-            {
-                hour = hour + 4;
-            }
-            dataItem.line_summary_data.uph = (activeWorkOrder.QtyBad + activeWorkOrder.QtyGood) / dataItem.line_summary_data.person_qty / hour;
+            lineKanbanData.time_start_actual = activeWorkOrder.TimeStartActual;
         }
 
         private int GetLineOperatorCount(string lineNo)
@@ -324,9 +313,11 @@ namespace Imms.WebManager
         public int Lamp { get; set; } // 1.红灯   2.黄灯  3.绿灯
     }
 
-    public class DataItem
+    public class KanbanLineData
     {
         public string line_code { get; set; }
+        public int plan_qty { get; set; }
+        public DateTime? time_start_actual { get; set; }
         public SummaryItem line_summary_data { get; set; }
         public DetailItem[] line_detail_data { get; set; }
     }
@@ -343,7 +334,6 @@ namespace Imms.WebManager
     public class DetailItem
     {
         public int hour { get; set; }
-        public int index { get; set; }
         public int qty_plan { get; set; }
         public int qty_good { get; set; }
         public int qty_bad { get; set; }

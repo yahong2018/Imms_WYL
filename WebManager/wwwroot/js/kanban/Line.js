@@ -8,12 +8,11 @@ var option = {
         color: 'white'
     },
     title: {
-        text: '生产效率',
-        left: 'center',
+        text: '生产效率 Hourly Productivity %',
+        left: 'center',        
         textStyle: {
             color: 'red',
-            fontSize: 32,
-            fontFamily: '宋体',
+            fontSize: 32,                       
             fontWeight: 'bolder'
         }
     },
@@ -36,7 +35,7 @@ var option = {
     xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: ['8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
+        data: ['8:00', '9:00', '10:00', '11:00', '12:00'],
         splitLine: {
             show: true,
             lineStyle: {
@@ -60,7 +59,7 @@ var option = {
             lineStyle: {
                 type: 'dashed'
             },
-            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            data: [0, 0, 0, 0, 0]
         },
         {
             name: '不良品',
@@ -71,13 +70,17 @@ var option = {
             lineStyle: {
                 type: 'dashed'
             },
-            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            data: [0, 0, 0, 0, 0]
         }
     ]
 };
 
 if (option && typeof option === "object") {
     myChart.setOption(option, true);
+}
+
+function numLeftPad(num, n) {
+    return (Array(n).join(0) + num).slice(0 - n);
 }
 
 function dateFtt(fmt, date) { //author: meizz 
@@ -118,19 +121,11 @@ var server_data = {
         person_qty: 6
     },
     line_detail_data: [
-        { hour: 8, index: -1, qty_plan: 0, qty_good: 0, qty_bad: 0 },
-        { hour: 9, index: 0, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 10, index: 1, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 11, index: 2, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 12, index: 3, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 13, index: 4, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 14, index: 5, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 15, index: 6, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 16, index: 7, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 17, index: 8, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 18, index: 9, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 19, index: 10, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 20, index: 11, qty_plan: 100, qty_good: 0, qty_bad: 0 },
+        { hour: 16, qty_plan: 100, qty_good: 0, qty_bad: 0 },
+        { hour: 17, qty_plan: 100, qty_good: 0, qty_bad: 0 },
+        { hour: 18, qty_plan: 100, qty_good: 0, qty_bad: 0 },
+        { hour: 19, qty_plan: 100, qty_good: 0, qty_bad: 0 },
+        { hour: 20, qty_plan: 100, qty_good: 0, qty_bad: 0 },
     ]
 };
 
@@ -156,6 +151,7 @@ function fill_detail_data(config) {
     var table = document.getElementById("line-details");
 
     var fill_row = function (row, data) {
+        row.cells[0].innerText = data.period;
         row.cells[1].innerText = data.qty_plan;
         row.cells[2].innerText = data.qty_good;
         row.cells[3].innerText = data.qty_bad;
@@ -165,24 +161,13 @@ function fill_detail_data(config) {
     };
     total_plan = total_actual = total_good = total_bad = 0;
 
-    var hour = new Date().getHours() + 1;
-    if (hour < 8) {
-        hour = 8;
-    }
-
     for (var i = 0; i < detail_items.length; i++) {
         var item = detail_items[i];
-        var index = item.index;
-        if (hour >= item.hour) {
-            config.good_items.push(item.qty_good);
-            config.bad_items.push(item.qty_bad);
-        }
+        config.good_items.push(item.qty_good);
+        config.bad_items.push(item.qty_bad);
+        config.hours.push(numLeftPad(item.hour,2)+":00");
 
-        if (index < 0 || index > table.rows.length) {
-            continue;
-        }
-
-        var row = table.rows[index + 1];
+        var row = table.rows[i + 1];
         var sub_total = item.qty_good + item.qty_bad;
         var percentOfPass = 0;
         if (sub_total != 0) {
@@ -192,7 +177,11 @@ function fill_detail_data(config) {
         if (item.qty_plan != 0) {
             percentOfProducton = (sub_total / item.qty_plan) * 100;
         }
+
+        var timeBegin = numLeftPad(item.hour, 2) + ':00';
+        var timeEnd = numLeftPad(item.hour + 1, 2) + ':00';
         fill_row(row, {
+            period: timeBegin + "~" + timeEnd,
             qty_plan: item.qty_plan,
             qty_good: item.qty_good,
             qty_bad: item.qty_bad,
@@ -208,6 +197,7 @@ function fill_detail_data(config) {
     }
     var row_summary = table.rows[table.rows.length - 1];
     fill_row(row_summary, {
+        period: '累计数',
         qty_plan: total_plan + "(件)",
         qty_good: total_good + "(件)",
         qty_bad: total_bad + "(件)",
@@ -221,22 +211,10 @@ function fill_detail_summary() {
     var table = document.getElementById("detail-summary");
     var now = new Date();
     var hour = now.getHours() + 1;
-    if (hour >= 20) {
-        hour = 20;
-    }
-    if (hour < 8) {
-        hour = 8;
-    }
     var detail_items = server_data.line_detail_data || [];
-    var item = {};
-    for (var i = 0; i < detail_items.length; i++) {
-        if (detail_items[i].hour == hour) {
-            item = detail_items[i];
-            break;
-        }
-    }
+    var item = detail_items[0];
 
-    var text = "当前时间<br/>" + (hour - 1) + ":00" + "~" + hour + ":00";
+    var text = "当前时间<br/>" + numLeftPad((hour - 1), 2) + ":00" + "~" + numLeftPad(hour,2) + ":00";
     var row_current = table.rows[1];
     row_current.cells[0].innerHTML = text;
     row_current.cells[1].innerText = item.qty_plan;
@@ -263,27 +241,29 @@ function fill_detail_summary() {
 
 var connection = new signalR.HubConnectionBuilder().withUrl("/LineKanbanHub/line").build();
 
-connection.on("OnServerData", function (dataItem) {
-    debugger;
-
+connection.on("OnServerData", function (dataItem) {   
     server_data = dataItem;
     var good_items = [];
     var bad_items = [];
+    var hours = [];
 
     fill_line_code();
     fill_line_summary();
-    fill_detail_data({ good_items: good_items, bad_items: bad_items });
+    fill_detail_data({ good_items: good_items, bad_items: bad_items,hours:hours });
     fill_detail_summary();
 
     var options = {
+        xAxis:{
+            data: hours.reverse()
+        },
         series: [
             {
                 name: '良品',
-                data: good_items
+                data: good_items.reverse()
             },
             {
                 name: '不良品',
-                data: bad_items
+                data: bad_items.reverse()
             }
         ]
     };
@@ -308,18 +288,20 @@ function start_connection() {
         connection.invoke("RegisterClient", lineNo);
         console.log("connected");
     }).catch(function () {
+        debugger;
         setTimeout(start_connection, 5000);
     });
 };
 
 
 connection.onclose(function () {
+    debugger;
     start_connection();
 });
 
 start_connection();
 fill_line_code();
 fill_line_summary();
-fill_detail_data({ good_items: [], bad_items: [] });
+fill_detail_data({ good_items: [], bad_items: [],hours:[] });
 fill_detail_summary();
 

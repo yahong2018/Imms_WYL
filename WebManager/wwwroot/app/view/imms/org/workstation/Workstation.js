@@ -14,8 +14,8 @@ Ext.define("app.view.imms.org.workstation.Workstation", {
         { dataIndex: "did", text: "机号", width: 120 },
         {
             dataIndex: "defectReportMethod", text: "不良汇报方式", width: 150, renderer: function (v) {
-                if (v == 3) {
-                    return "3.按键汇报";
+                if (v == 2) {
+                    return "2.按键汇报";
                 } else if (v == 9) {
                     return "9.光感汇报";
                 }

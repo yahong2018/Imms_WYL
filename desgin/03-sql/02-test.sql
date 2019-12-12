@@ -65,7 +65,20 @@ insert into mes_operator(org_code,emp_id,emp_name,title,pic,seq)
    values('A301-1','C00003','胡玲','高级组长','upload/operators/W01/A301-1/C00003_胡玲.png',3);   
 
 insert into mes_operator(org_code,emp_id,emp_name,title,pic,seq)
-   values('A301-1','C00004','莫房昌','品质工程师','upload/operators/W01/A301-1/C00004_莫房昌.png',4);      
+   values('A301-1','C00004','莫房昌','品质工程师','upload/operators/W01/A301-1/C00004_莫房昌.png',4);    
 
+/* *********************************************************************************************
+*       报工
+***********************************************************************************************/             
+declare @DataGatherTime datetime;
+declare @RespData varchar(200);
+
+set @DataGatherTime = GETDATE();
+-- exec MES_ProcessDeviceData 1,3,2,'11',@DataGatherTime,@RespData output;
+
+exec MES_ProcessDeviceData 1,2,9,'11',@DataGatherTime,@RespData output;
+
+select @RespData;
+  
 
 

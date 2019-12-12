@@ -10,6 +10,10 @@ Ext.define("app.view.imms.org.workstation.WorkstationDetailForm", {
     },
     items: [
         {
+            name: "recordId",
+            xtype: "hidden"
+        },
+        {
             name: "parentId",
             xtype: "hidden"
         },
@@ -59,7 +63,7 @@ Ext.define("app.view.imms.org.workstation.WorkstationDetailForm", {
                     maxLength: 3,
                     enforceMaxLength: true,
                     width: 180
-                }, { xtype: "label",margin:"8 20 5 5", text: "3.按键汇报  9.光电汇报" }
+                }, { xtype: "label",margin:"8 20 5 5", text: "2.按键汇报  9.光电汇报" }
             ]
         },
         {

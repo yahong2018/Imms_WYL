@@ -37,7 +37,7 @@
 
         .row {
             height: 68px;
-            font-size: 24px !important;
+            font-size: 32px !important;
         }
 
         #detail-summary th {
@@ -62,7 +62,7 @@
             Cell Line:A301-1
         </div>
         <div
-            style="float:left;font-size: 48px;padding-left:100px; width: 500px; height: 100%;text-align: justify;text-align-last: justify;margin-top: -15px;">
+            style="float:left;font-size: 48px;padding-left:100px;font-weight: bolder;  width: 500px; height: 100%;text-align: justify;text-align-last: justify;margin-top: -15px;">
             生产实时看板 E-Board
         </div>
         <div id="current_time"
@@ -77,25 +77,25 @@
                 <th class="first_td">产品型号<br/>P/N</th>
                 <th style="width:200px;">AL666-ACC-01R</th>
                 <th>产品名称<br/>Des.</th>
-                <th style="width:200px;">&nbsp;</th>
+                <th style="width:250px;">&nbsp;</th>
                 <th>工单号<br/>WO:</th>
                 <th style="width:200px;">&nbsp;</th>
                 <th>产出每小时<br/>Plan UPH:</th>
                 <th>30(PCS)</th>
-                <th>人数<br/>No of Worker.</th>
+                <th style="width:200px;">人数<br/>No of Worker.</th>
                 <th>6(人)</th>
             </tr>
         </table>
         <div style="width: 100%;height: 20px;"></div>
         <table id="line-details">
-            <tr style="background-color:RoyalBlue;" class="row">
-                <th class="first_td">时间段<br/>Time Period</th>
+            <tr style="background-color:RoyalBlue;font-size: 24px !important;" class="row">
+                <th class="first_td" style="width: 350px;">时间段<br/>Time Period</th>
                 <th>要求产出(件)<br/>Plan Qty.</th>
                 <th>良品(件)<br/>Pass Qty.</th>
                 <th>不良品(件)<br/>Fail Qty.</th>
                 <th>总数(件)<br/>Ttl Qty.</th>
-                <th>合格率<br/>Pass Yield(%)</th>
-                <th>生产率<br/>Comp Yield(%)</th>
+                <th style="width: 210px;">合格率<br/>Pass Yield(%)</th>
+                <th style="width: 200px;">生产率<br/>OTD(%)</th>
             </tr>
             <tr class="row">
                 <td>08:00~09:00</td>
@@ -142,7 +142,7 @@
                 <td>0</td>
                 <td>0</td>
             </tr>            
-            <tr style="background-color:RoyalBlue;font-size: 22px !important;" class="row">
+            <tr style="background-color:RoyalBlue;font-size: 32px !important;" class="row">
                 <th>累计数</th>
                 <th>1200(件)</th>
                 <th>0(件)</th>
@@ -158,28 +158,28 @@
                 <thead>
                     <caption
                         style="color: red;font-size:32px;font-weight: bolder;height: 75px;line-height: 75px;vertical-align: middle;">
-                        生产实际 Actual Status
+                        实时报示 Actual Status
                     </caption>
-                    <tr style="border: none !important;height: 70px;font-size: 20px;">
+                    <tr style="border: none !important;height: 70px;font-size: 26px;">
                         <th>类别</th>
                         <th>计划数<br/>Plan Qty.</th>
-                        <th>生产数<br/>Output Qty.</th>
-                        <th>生产率<br/>Production Yield(%)</th>
+                        <th>生产数<br/>Out Qty.</th>
+                        <th>生产率<br/>OTD(%)</th>
                         <th>不良数<br/>Fail Qty</th>
                         <th>不良率<br/>Fail (%)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="height: 100px;font-size: 20px;">
-                        <td>当前时间<br />10:00~11:00</td>
+                    <tr style="height: 100px;font-size: 32px;">
+                        <td style="font-size: 24px !important;">当前时间<br />10:00~11:00</td>
                         <td>100</td>
                         <td>0</td>
                         <td>0%</td>
                         <td>0</td>
                         <td>0%</td>
                     </tr>
-                    <tr style="height: 100px;font-size: 20px;">
-                        <td>当天统计<br />11-Oct 2019</td>
+                    <tr style="height: 100px;font-size: 32px;">
+                        <td style="font-size: 24px !important;">当天统计<br />11-Oct 2019</td>
                         <td>1200</td>
                         <td>0</td>
                         <td>0%</td>

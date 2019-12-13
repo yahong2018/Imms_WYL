@@ -197,7 +197,7 @@ namespace Imms.WebManager
             this.FillWorkorder(lineKanbanItem, lineNo);
 
             lineKanbanItem.line_detail_data = new DetailItem[hours.Length];
-            List<LineProductSummaryDateSpan> allList = this.GetLineProductSummaryDateSpan(lineNo, hours[0], hours[4]);
+            List<LineProductSummaryDateSpan> allList = this.GetLineProductSummaryDateSpan(lineNo,lineKanbanItem.line_summary_data.production_order_no, hours[0], hours[4]);
             for (int i = 0; i < hours.Length; i++)
             {
                 DetailItem item = new DetailItem();
@@ -226,7 +226,7 @@ namespace Imms.WebManager
             }
         }
 
-        private List<LineProductSummaryDateSpan> GetLineProductSummaryDateSpan(string lineNo, int hourEnd, int hourStart)
+        private List<LineProductSummaryDateSpan> GetLineProductSummaryDateSpan(string lineNo, string workorderNo, int hourEnd, int hourStart)
         {
             DateTime now = DateTime.Now;
             DateTime productDate = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0);
@@ -236,6 +236,7 @@ namespace Imms.WebManager
                 {
                     return dbContext.Set<LineProductSummaryDateSpan>().Where(
                                     x => x.LineNo == lineNo
+                                    && x.WorkorderNo == workorderNo
                                     && x.ProductDate == productDate
                                     && (x.SpanId >= hourStart && x.SpanId <= hourEnd))
                             .ToList();
@@ -245,6 +246,7 @@ namespace Imms.WebManager
                     DateTime prevDate = productDate.AddDays(-1);
                     IQueryable<LineProductSummaryDateSpan> query = dbContext.Set<LineProductSummaryDateSpan>().Where(
                             x => x.LineNo == lineNo
+                            && x.WorkorderNo == workorderNo
                             && ((x.ProductDate == productDate && x.SpanId <= hourEnd)
                                || (x.ProductDate == prevDate && x.SpanId >= hourStart)
                             )
@@ -271,10 +273,10 @@ namespace Imms.WebManager
             {
                 lineKanbanData.line_summary_data.person_qty = 4;
             }
-            lineKanbanData.line_summary_data.uph = (activeWorkOrder.QtyBad + activeWorkOrder.QtyGood) / lineKanbanData.line_summary_data.person_qty;
-
-            lineKanbanData.plan_qty = activeWorkOrder.QtyReq;
+            //lineKanbanData.line_summary_data.uph = (activeWorkOrder.QtyBad + activeWorkOrder.QtyGood) / lineKanbanData.line_summary_data.person_qty / 5;
             int hours = activeWorkOrder.TimeEndPlan.Subtract(activeWorkOrder.TimeStartPlan).Hours;
+            lineKanbanData.line_summary_data.uph = activeWorkOrder.QtyReq / hours / 5;
+            lineKanbanData.plan_qty = activeWorkOrder.QtyReq;            
             if (hours > 0)
             {
                 lineKanbanData.plan_qty = lineKanbanData.plan_qty / hours;

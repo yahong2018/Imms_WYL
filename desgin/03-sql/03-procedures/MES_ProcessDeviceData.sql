@@ -12,11 +12,11 @@ ALTER procedure [dbo].[MES_ProcessDeviceData]
 begin
     declare @DefectCode varchar(20),@WorkstationCode varchar(20), @WorkstationName varchar(50), @WorkorderNo varchar(20),@LineNo varchar(20);
     declare @RecordType int,@SpanId int,@DefectReportMethod int,@ProductDate datetime,@PartNo varchar(50);
-    declare @QtyGood int,@QtyBad int,@QtyPlan int,@lock int,@Hours int,@IsLastWorkstation bit,@Seq int;
-	declare @LineId bigint;
-
+    declare @QtyGood int,@QtyBad int,@QtyPlan int,@lock int,@Hours int,@IsLastWorkstation bit,@WorkstationSeq int;
+	declare @LineId bigint,@WorkshiftCode varchar(20),@WorkshopId bigint;    
+    
     select @RespData ='',@DefectCode='',@WorkstationCode='',@WorkorderNo='',@RecordType=-1,@SpanId=-1,
-           @QtyGood = 0,@QtyBad = 0 ,@QtyPlan = 0;    
+           @QtyGood = 0,@QtyBad = 0 ,@QtyPlan = 0;
 	   
 	if (select count(*)  from mes_org w
     where w.org_type = 'ORG_WORK_STATION'
@@ -31,7 +31,7 @@ begin
 		return;
 	end;
 
-    select @WorkstationCode = org_code,@LineId = parent_id, @WorkstationName = org_name, @DefectReportMethod = defect_report_method,@Seq = seq
+    select @WorkstationCode = org_code,@LineId = parent_id, @WorkstationName = org_name, @DefectReportMethod = defect_report_method,@WorkstationSeq = seq
         from mes_org where gid = @GID and did = @DID;
     if(@WorkstationCode = '')begin
 		set @RespData ='2|1|4';
@@ -43,7 +43,7 @@ begin
         return;
     end;
 	
-    select @LineNo = L.org_code  from mes_org  L  where L.record_id = @LineId;
+    select @LineNo = L.org_code,@WorkshopId = parent_id  from mes_org  L  where L.record_id = @LineId;
     select top 1 @WorkorderNo = workorder_no,@PartNo = part_no  from mes_active_workorder A   where A.line_no = @LineNo;
     if @WorkorderNo = ''  begin
         set @RespData='2|1|2';
@@ -53,19 +53,37 @@ begin
         return;
     end;
 
+    select @WorkshiftCode = workshift_code from mes_org where record_id = @WorkshopId;
+    select top 1 @SpanId = record_id       
+      from mes_workshift_span sp
+     where  is_break = 0
+       and cast((CONVERT(varchar(10),@ReqTime,120) + ' '+ sp.time_begin) as datetime) <= @ReqTime
+       and sp.workshift_id in(
+          select record_id from mes_workshift where shift_code = @WorkshiftCode
+       )
+      order by time_begin desc;
+
+    if(@SpanId = -1)  begin
+        set @RespData='2|1|2';
+        set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+        set @RespData= @RespData + '|1|休息时间段，不可计数.|0'; 
+
+        return;       
+    end;
+
 	set @IsLastWorkstation = 0;
-	if(@Seq =  (select max(seq) from mes_org L where L.parent_id  = @LineId))  -- 是否是最后一个产线计数的工位
+	if(@WorkstationSeq =  (select max(seq) from mes_org L where L.parent_id  = @LineId))  -- 是否是最后一个产线计数的工位
 	   set @IsLastWorkstation =1;
 
     -- --------------------------------------------------------------------------------------------------------   
-    if (not @ReqDataType in(2,9))begin -- 通过按键进行不良品报工        
+    if (not @ReqDataType in(2,9)) begin -- 通过按键进行不良品报工        
         if (@ReqDataType = 2) and (@ReqData <> '11')  and (@ReqData <> '12') 
         begin
             set @RespData='2|1|4';
             set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
-            set @RespData= @RespData + '|1|操作错误，报不良|0';
-            set @RespData= @RespData + '|2|请按[确定]键.|0';
-            set @RespData= @RespData + '|3|清0按[取消]键.|0';
+            set @RespData= @RespData + '|1|操作错误:|0';
+            set @RespData= @RespData + '|2|报不良按[确定]键.|0';
+            set @RespData= @RespData + '|3|清零按[取消]键.|0';
 
             return;        
         end;
@@ -81,7 +99,7 @@ begin
 
         set @RespData='2|1|2';
         set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
-        set @RespData= @RespData + '|1|统计数据已清0|0';     
+        set @RespData= @RespData + '|1|统计数据已清零|0';     
 
         return;
     end ;
@@ -91,12 +109,9 @@ begin
     set @RecordType = 0 ; -- 默认为良品报工
     if (@DefectReportMethod = @ReqDataType) begin
         set @RecordType = 1;  -- 不良品报工
-    end;    
-
-    set @SpanId = DATEPART(hh,@ReqTime);
-    set @SpanId = @SpanId;  
+    end;      
     
-    set @ProductDate = cast(CONVERT(varchar(10),@ReqTime,120) as datetime);   
+    set @ProductDate = cast(CONVERT(varchar(10),@ReqTime,120) as datetime);
 
     insert into mes_workorder_actual(workorder_no,part_no,workstation_code,qty,record_type,defect_code,report_time) 
          values(@WorkorderNo,@PartNo,@WorkstationCode,1,@RecordType,@DefectCode,@ReqTime);
@@ -119,18 +134,9 @@ begin
             select * from mes_line_product_summary_datespan
                where line_no = @LineNo and workorder_no = @WorkorderNo 
                  and product_date = @ProductDate and span_id = @SpanId
-        )begin
-			select @QtyPlan = qty_req,
-			       @Hours = datediff( hour, time_start_plan, time_end_plan)
-			 from mes_workorder
-			 where line_no = @LineNo;
-
-			set @Hours = isnull(@Hours,1);			
-			set @QtyPlan = isnull(@QtyPlan,0);
-			set @QtyPlan = @QtyPlan / @Hours;
-			
-            insert into mes_line_product_summary_datespan(line_no,workorder_no,part_no,product_date,span_id,qty_plan,qty_good,qty_bad)
-                 values(@LineNo,@WorkorderNo,@PartNo,@ProductDate,@SpanId,@QtyPlan, (case when @IsLastWorkstation = 1 then @QtyGood else 0 end),@QtyBad);
+        )begin			
+            insert into mes_line_product_summary_datespan(line_no,workorder_no,part_no,product_date,span_id,qty_good,qty_bad)
+                 values(@LineNo,@WorkorderNo,@PartNo,@ProductDate,@SpanId,(case when @IsLastWorkstation = 1 then @QtyGood else 0 end),@QtyBad);
 
         end else 
             update mes_line_product_summary_datespan

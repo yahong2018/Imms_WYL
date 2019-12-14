@@ -9,11 +9,11 @@ var option = {
     },
     title: {
         text: '生产效率 Hourly OTD %',
-        left: 'center',        
+        left: 'center',
         textStyle: {
             color: 'red',
-            fontSize: 32,    
-            fontFamily:'微软雅黑',
+            fontSize: 32,
+            fontFamily: '微软雅黑',
             fontWeight: 'bolder'
         }
     },
@@ -109,11 +109,13 @@ setInterval(function () {
     current_time.innerText = text;
 }, 1000);
 
-var total_plan, total_actual, total_good, total_bad,max_qty;
+var total_plan, total_actual, total_good, total_bad, max_qty;
 total_plan = total_actual = total_good = total_bad = max_qty = 0;
 
 var server_data = {
     line_code: "A301-1",
+    is_break: false,
+
     line_summary_data: {
         production_code: "AL666-ACC-02R",
         production_name: "",
@@ -122,11 +124,10 @@ var server_data = {
         person_qty: 6
     },
     line_detail_data: [
-        { hour: 16, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 17, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 18, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 19, qty_plan: 100, qty_good: 0, qty_bad: 0 },
-        { hour: 20, qty_plan: 100, qty_good: 0, qty_bad: 0 },
+        { time_begin: '08:15', time_end: '09:15', qty_plan: 0, qty_good: 0, qty_bad: 0, is_current_item: false },
+        { time_begin: '09:15', time_end: '10:15', qty_plan: 0, qty_good: 0, qty_bad: 0, is_current_item: false },
+        { time_begin: '10:15', time_end: '11:15', qty_plan: 0, qty_good: 0, qty_bad: 0, is_current_item: false },
+        { time_begin: '11:15', time_end: '12:15', qty_plan: 0, qty_good: 0, qty_bad: 0, is_current_item: false },
     ]
 };
 
@@ -161,17 +162,18 @@ function fill_detail_data(config) {
         row.cells[6].innerText = data.percentOfProducton;
     };
     total_plan = total_actual = total_good = total_bad = max_qty = 0;
-
+    config.good_items.push(0);
+    config.bad_items.push(0);
+    var mustContinue = false;
     for (var i = 0; i < detail_items.length; i++) {
         var item = detail_items[i];
+        config.hours.push(item.time_begin);
+        if (mustContinue==true){
+            continue;
+        }
+
         var row = table.rows[i + 1];
         var sub_total = item.qty_good + item.qty_bad;
-
-        // config.good_items.push(item.qty_good);
-        // config.bad_items.push(item.qty_bad);
-        config.hours.push(numLeftPad(item.hour,2)+":00");        
-
-
         var percentOfPass = 0;
         if (sub_total != 0) {
             percentOfPass = (item.qty_good / sub_total) * 100;
@@ -182,24 +184,23 @@ function fill_detail_data(config) {
         }
 
         var percentOfBad = 100 - percentOfPass;
-        if(item.qty_bad == 0){
+        if (item.qty_bad == 0) {
             percentOfBad = 0;
         }
+        
         config.good_items.push(percentOfProducton.toFixed(1));
         config.bad_items.push(percentOfBad.toFixed(1));
         if (max_qty < percentOfProducton) {
             max_qty = Math.ceil(percentOfProducton);
         }
 
-        var timeBegin = numLeftPad(item.hour, 2) + ':00';
-        var timeEnd = numLeftPad(item.hour + 1, 2) + ':00';
         fill_row(row, {
-            period: timeBegin + "~" + timeEnd,
+            period: item.time_begin + "~" + item.time_end,
             qty_plan: item.qty_plan,
             qty_good: item.qty_good,
             qty_bad: item.qty_bad,
             sub_total: sub_total,
-            percentOfPass: percentOfPass.toFixed(1)+"%",
+            percentOfPass: percentOfPass.toFixed(1) + "%",
             percentOfProducton: percentOfProducton.toFixed(1) + "%"
         });
 
@@ -207,7 +208,13 @@ function fill_detail_data(config) {
         total_bad += item.qty_bad;
         total_plan += item.qty_plan;
         total_actual += sub_total;
+
+        if (item.is_current_item == true) {
+            mustContinue = true;
+        }
     }
+    config.hours.push(detail_items[detail_items.length - 1].time_end);
+
     var row_summary = table.rows[table.rows.length - 1];
     fill_row(row_summary, {
         period: '累计数',
@@ -222,12 +229,16 @@ function fill_detail_data(config) {
 
 function fill_detail_summary() {
     var table = document.getElementById("detail-summary");
-    var now = new Date();
-    var hour = now.getHours() + 1;
     var detail_items = server_data.line_detail_data || [];
     var item = detail_items[0];
+    for (var i = 0; i < detail_items.length; i++) {
+        item = detail_items[i];
+        if (item.is_current_item == true) {
+            break;
+        }
+    }
 
-    var text = "当前时间<br/>" + numLeftPad((hour - 1), 2) + ":00" + "~" + numLeftPad(hour,2) + ":00";
+    var text = "当前时间<br/>" + item.time_begin + "~" + item.time_end;
     var row_current = table.rows[1];
     row_current.cells[0].innerHTML = text;
     row_current.cells[1].innerText = item.qty_plan;
@@ -238,6 +249,7 @@ function fill_detail_summary() {
     row_current.cells[4].innerText = item.qty_bad;
     row_current.cells[5].innerText = (((qty_actual == 0) ? 0 : item.qty_bad / qty_actual) * 100).toFixed(1) + "%";
 
+    var now = new Date();
     var month = now.toDateString().split(" ")[1];
     var day = now.getDate();
     var year = now.getFullYear();
@@ -254,40 +266,43 @@ function fill_detail_summary() {
 
 var connection = new signalR.HubConnectionBuilder().withUrl("/LineKanbanHub/line").build();
 
-connection.on("OnServerData", function (dataItem) {   
+connection.on("OnServerData", function (dataItem) {
     server_data = dataItem;
+    if (server_data.is_break) {
+        return;  //休息时间不更新数据
+    }
+
     var good_items = [];
     var bad_items = [];
     var hours = [];
 
     fill_line_code();
     fill_line_summary();
-    fill_detail_data({ good_items: good_items, bad_items: bad_items,hours:hours });
+    fill_detail_data({ good_items: good_items, bad_items: bad_items, hours: hours });
     fill_detail_summary();
 
-    if (max_qty <=100){
+    if (max_qty <= 100) {
         max_qty = 100;
     }
 
     var options = {
-        yAxis: {          
-            max: max_qty            
+        yAxis: {
+            max: max_qty
         },
-        xAxis:{
-            data: hours.reverse()
+        xAxis: {
+            data: hours
         },
         series: [
             {
                 name: '良品',
-                data: good_items.reverse()
+                data: good_items
             },
             {
                 name: '不良品',
-                data: bad_items.reverse()
+                data: bad_items
             }
         ]
     };
-
     myChart.setOption(options);
 });
 
@@ -302,26 +317,22 @@ function getQueryVariable(variable) {
 }
 
 var lineNo = getQueryVariable("lineNo");
-
+var mustLight = getQueryVariable("mustLight");
 function start_connection() {
     connection.start().then(function () {
-        connection.invoke("RegisterClient", lineNo);
+        connection.invoke("RegisterWebClient", lineNo, mustLight);
         console.log("connected");
     }).catch(function () {
-        debugger;
         setTimeout(start_connection, 5000);
     });
 };
 
-
 connection.onclose(function () {
-    debugger;
     start_connection();
 });
 
 start_connection();
 fill_line_code();
 fill_line_summary();
-fill_detail_data({ good_items: [], bad_items: [],hours:[] });
+fill_detail_data({ good_items: [], bad_items: [], hours: [] });
 fill_detail_summary();
-

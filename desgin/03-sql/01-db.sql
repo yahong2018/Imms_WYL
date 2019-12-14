@@ -184,7 +184,7 @@ create table mes_org
          
     seq                        int               not null,
     defect_report_method       int               not null default 0,  -- 不良汇报方式:  3.按键报不良 9. 光感报不良     
-    workshitf_code             varchar(20)       not null
+    workshift_code             varchar(20)       null,
 
     primary key(record_id)
 );
@@ -225,6 +225,7 @@ create table mes_workorder
     qty_req           int              not null,
     qty_good          int              not null default 0,
     qty_bad           int              not null default 0,
+    clap              int              not null,
 
     time_start_plan   datetime         not null,
     time_end_plan     datetime         not null,
@@ -289,9 +290,8 @@ create table mes_line_product_summary_datespan
     part_no            varchar(50)     not null,
     product_date       datetime        not null,
 
-    span_id            int             not null,
+    span_id            bigint          not null,
 
-    qty_plan           int             not null,
     qty_good           int             not null,
     qty_bad            int             not null,
 

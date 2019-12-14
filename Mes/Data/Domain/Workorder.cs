@@ -16,6 +16,7 @@ namespace Imms.Mes.Data.Domain
         public int QtyReq { get; set; }
         public int QtyGood { get; set; }
         public int QtyBad { get; set; }
+        public int Clap { get; set; }
 
         public DateTime TimeStartPlan { get; set; }
         public DateTime TimeEndPlan { get; set; }
@@ -66,9 +67,8 @@ namespace Imms.Mes.Data.Domain
         public string PartNo { get; set; }
         public DateTime ProductDate { get; set; }
 
-        public int SpanId { get; set; }
+        public long SpanId { get; set; }
 
-        public int QtyPlan { get; set; }
         public int QtyGood { get; set; }
         public int QtyBad { get; set; }
     }
@@ -99,6 +99,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.TimeEndPlan).HasColumnName("time_end_plan");
             builder.Property(e => e.TimeStartActual).HasColumnName("time_start_actual");
             builder.Property(e => e.TimeEndActual).HasColumnName("time_end_actual");
+            builder.Property(e => e.Clap).HasColumnName("clap");
         }
     }
 
@@ -152,9 +153,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.PartNo).HasColumnName("part_no");
             builder.Property(e => e.ProductDate).HasColumnName("product_date");
 
-            builder.Property(e => e.SpanId).HasColumnName("span_id");
-
-            builder.Property(e => e.QtyPlan).HasColumnName("qty_plan");
+            builder.Property(e => e.SpanId).HasColumnName("span_id");            
             builder.Property(e => e.QtyGood).HasColumnName("qty_good");
             builder.Property(e => e.QtyBad).HasColumnName("qty_bad");
         }

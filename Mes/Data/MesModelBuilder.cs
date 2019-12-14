@@ -24,6 +24,9 @@ namespace Imms.Mes.Data
             modelBuilder.ApplyConfiguration(new Imms.Mes.Data.Domain.LineProductSumaryDateSpanConfigure());            
 
             modelBuilder.ApplyConfiguration(new Imms.Mes.Data.Domain.DefectConfigure());
+
+            modelBuilder.ApplyConfiguration(new Imms.Mes.Data.Domain.WorkshiftConfigure());
+            modelBuilder.ApplyConfiguration(new Imms.Mes.Data.Domain.WorkshiftSpanConfigure());            
         }
     }
 }

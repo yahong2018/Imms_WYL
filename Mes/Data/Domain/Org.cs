@@ -12,6 +12,8 @@ namespace Imms.Mes.Data.Domain
     {
         public string WorkshopCode { get { return base.OrgCode; } set { base.OrgCode = value; } }
         public string WorkshopName { get { return base.OrgName; } set { base.OrgName = value; } }
+
+        public string WorkshiftCode { get; set; }
     }
 
     public class Workline : Imms.Data.Domain.Org
@@ -65,6 +67,8 @@ namespace Imms.Mes.Data.Domain
             ImmsDbContext.RegisterEntityTable<Workshop>("mes_org");
             builder.Ignore(e => e.WorkshopCode);
             builder.Ignore(e => e.WorkshopName);
+
+            builder.Property(e=>e.WorkshiftCode).HasColumnName("workshift_code");
         }
     }
 

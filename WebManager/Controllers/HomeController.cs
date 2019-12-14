@@ -57,6 +57,7 @@ namespace Imms.WebManager.Controllers
                                       && p.ProgramStatus == 0
                                    select p
                 ).Include(x => x.Privielges)
+                .OrderBy(x=>x.ShowOrder)
                 .ToList();
 
                 programList.AddRange(allPrograms.Where(x => string.IsNullOrEmpty(x.ParentId)));

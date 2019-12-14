@@ -199,8 +199,8 @@ function fill_detail_data(config) {
             qty_good: item.qty_good,
             qty_bad: item.qty_bad,
             sub_total: sub_total,
-            percentOfPass: percentOfPass.toFixed(1),
-            percentOfProducton: percentOfProducton.toFixed(1)
+            percentOfPass: percentOfPass.toFixed(1)+"%",
+            percentOfProducton: percentOfProducton.toFixed(1) + "%"
         });
 
         total_good += item.qty_good;
@@ -264,6 +264,10 @@ connection.on("OnServerData", function (dataItem) {
     fill_line_summary();
     fill_detail_data({ good_items: good_items, bad_items: bad_items,hours:hours });
     fill_detail_summary();
+
+    if (max_qty <=100){
+        max_qty = 100;
+    }
 
     var options = {
         yAxis: {          

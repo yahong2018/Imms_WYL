@@ -122,10 +122,11 @@ INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) V
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status)VALUES ('SYS02','SYS02', '看板系统', '', 1, '', '', '0xf0ae',0);
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02', 'RUN', '运行');
 
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_01', 'SYS02_01', '组织结构', 'app.view.imms.org.Organization', 0, '',  'SYS02', '0xf0e8',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_02', 'SYS02_02', '操作员管理', 'app.view.imms.org.operator.Operator',1, '', 'SYS02', '0xf2be',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_03', 'SYS03_03', '生产计划', 'app.view.imms.mfc.workorder.Workorder', 2, '', 'SYS02', '0xf03a',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_04', 'SYS03_04', '生产实绩', 'app.view.imms.mfc.workorderActual.WorkorderActual', 3, '', 'SYS02', '0xf0cb',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_05', 'SYS02_05', '生产班次', 'app.view.timesheet.TimeSheet', 0, '',  'SYS02', '0xf0c9',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_01', 'SYS02_01', '组织结构', 'app.view.imms.org.Organization', 1, '',  'SYS02', '0xf0e8',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_02', 'SYS02_02', '操作员管理', 'app.view.imms.org.operator.Operator',2, '', 'SYS02', '0xf2be',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_03', 'SYS03_03', '生产计划', 'app.view.imms.mfc.workorder.Workorder', 3, '', 'SYS02', '0xf03a',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_04', 'SYS03_04', '生产实绩', 'app.view.imms.mfc.workorderActual.WorkorderActual', 4, '', 'SYS02', '0xf0cb',0);
 
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'RUN', '运行');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'INSERT', '新增');
@@ -149,6 +150,11 @@ INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) V
 
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_04', 'RUN', '运行');
 
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_05', 'RUN', '运行');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_05', 'INSERT', '新增');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_05', 'UPDATE', '修改');
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_05', 'DELETE', '删除');
+
 -- --------------------------------------------------------------------------------------------------------------------
 
 set @role_id = 1;
@@ -167,7 +173,7 @@ INSERT INTO mes_role_privilege (role_id, program_privilege_id, program_id, privi
 
 create table mes_org
 (
-    record_id                  bigint          identity(1,1),
+    record_id                  bigint            identity(1,1),
     org_code                   varchar(20)       not null,
     org_name                   varchar(50)       not null,
     org_type                   varchar(20)       not null,
@@ -178,6 +184,7 @@ create table mes_org
          
     seq                        int               not null,
     defect_report_method       int               not null default 0,  -- 不良汇报方式:  3.按键报不良 9. 光感报不良     
+    workshitf_code             varchar(20)       not null
 
     primary key(record_id)
 );
@@ -304,4 +311,29 @@ create table mes_workstation_output
 
     primary key(record_id)
 );
+
+create table mes_workshift(
+    record_id        bigint           identity(1,1),
+    shift_code       varchar(20)      not null,
+    shift_name       varchar(50)      not null,
+    shift_status     int              not null,
+
+    primary key(record_id)
+);
+
+
+create table mes_workshift_span
+(
+    record_id         bigint          identity(1,1),
+    workshift_id      bigint          not null,
+    seq               int             not null,    
+    time_begin        varchar(5)      not null,
+    time_end          varchar(5)      not null,
+    is_break          int             not null,
+    is_show_on_kanban int             not null,
+
+    primary key(record_id)
+);
+
+
 

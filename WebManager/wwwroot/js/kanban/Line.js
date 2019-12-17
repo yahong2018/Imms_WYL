@@ -47,7 +47,7 @@ var option = {
     yAxis: {
         type: 'value',
         min: 0,
-        max: 100,
+        max: 120,
         interval: 10,
     },
     series: [
@@ -167,11 +167,6 @@ function fill_detail_data(config) {
     var mustContinue = false;
     for (var i = 0; i < detail_items.length; i++) {
         var item = detail_items[i];
-        config.hours.push(item.time_begin);
-        if (mustContinue==true){
-            continue;
-        }
-
         var row = table.rows[i + 1];
         var sub_total = item.qty_good + item.qty_bad;
         var percentOfPass = 0;
@@ -182,17 +177,16 @@ function fill_detail_data(config) {
         if (item.qty_plan != 0) {
             percentOfProducton = (sub_total / item.qty_plan) * 100;
         }
-
         var percentOfBad = 100 - percentOfPass;
         if (item.qty_bad == 0) {
             percentOfBad = 0;
         }
-        
-        config.good_items.push(percentOfProducton.toFixed(1));
-        config.bad_items.push(percentOfBad.toFixed(1));
-        if (max_qty < percentOfProducton) {
-            max_qty = Math.ceil(percentOfProducton);
-        }
+
+        config.hours.push(item.time_begin);     
+        if (!mustContinue) {
+            config.good_items.push(percentOfProducton.toFixed(1));
+            config.bad_items.push(percentOfBad.toFixed(1));
+        }        
 
         fill_row(row, {
             period: item.time_begin + "~" + item.time_end,
@@ -212,7 +206,7 @@ function fill_detail_data(config) {
         if (item.is_current_item == true) {
             mustContinue = true;
         }
-    }
+    }    
     config.hours.push(detail_items[detail_items.length - 1].time_end);
 
     var row_summary = table.rows[table.rows.length - 1];
@@ -281,14 +275,14 @@ connection.on("OnServerData", function (dataItem) {
     fill_detail_data({ good_items: good_items, bad_items: bad_items, hours: hours });
     fill_detail_summary();
 
-    if (max_qty <= 100) {
-        max_qty = 100;
-    }
+    // if (max_qty <= 100) {
+    //     max_qty = 100;
+    // }
 
     var options = {
-        yAxis: {
-            max: max_qty
-        },
+        // yAxis: {
+        //     max: max_qty
+        // },
         xAxis: {
             data: hours
         },

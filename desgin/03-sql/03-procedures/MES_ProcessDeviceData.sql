@@ -1,3 +1,10 @@
+USE [data_gather]
+GO
+/****** Object:  StoredProcedure [dbo].[MES_ProcessDeviceData]    Script Date: 2019/12/17 14:39:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 ALTER procedure [dbo].[MES_ProcessDeviceData] 
     -- 1. 如果是按键，则读取品质代码表，进行不良报工
     -- 2. 如果光感，则进行良品报工    
@@ -58,15 +65,17 @@ begin
       from mes_workshift_span sp
      where  is_break = 0
        and cast((CONVERT(varchar(10),@ReqTime,120) + ' '+ sp.time_begin) as datetime) <= @ReqTime
+	   and cast((CONVERT(varchar(10),@ReqTime,120) + ' '+ sp.time_end) as datetime) >= @ReqTime
        and sp.workshift_id in(
           select record_id from mes_workshift where shift_code = @WorkshiftCode
        )
       order by time_begin desc;
 
     if(@SpanId = -1)  begin
-        set @RespData='2|1|2';
+        set @RespData='2|1|3';
         set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
-        set @RespData= @RespData + '|1|休息时间段，不可计数.|0'; 
+        set @RespData= @RespData + '|1|休息时间段，|0'; 
+		set @RespData= @RespData + '|2|不可计数.|0'; 
 
         return;       
     end;
@@ -76,8 +85,8 @@ begin
 	   set @IsLastWorkstation =1;
 
     -- --------------------------------------------------------------------------------------------------------   
-    if (not @ReqDataType in(2,9)) begin -- 通过按键进行不良品报工        
-        if (@ReqDataType = 2) and (@ReqData <> '11')  and (@ReqData <> '12') 
+    if (@ReqDataType in(2,9)) begin -- 通过按键进行不良品报工        
+        if (@ReqDataType = 2) and (not @ReqData in('11','12')) 
         begin
             set @RespData='2|1|4';
             set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
@@ -85,7 +94,7 @@ begin
             set @RespData= @RespData + '|2|报不良按[确定]键.|0';
             set @RespData= @RespData + '|3|清零按[取消]键.|0';
 
-            return;        
+            return;
         end;
     end;
     -- --------------------------------------------------------------------------------------------------------
@@ -173,9 +182,9 @@ begin
     commit tran; 
 	
 	set @RespData='2|1|5';
-	set @RespData= @RespData + '|210|0|129|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+	set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
 	set @RespData= @RespData + '|1|已处理，请继续|0';
     set @RespData= @RespData + '|2|'+@WorkstationName+'|0'; 
 	set @RespData= @RespData + '|3|良品:'+cast(@QtyGood as varchar)+'|0'; 
-	set @RespData= @RespData + '|4|不良品:'+cast(@QtyBad as varchar)+'|0'; 
+	set @RespData= @RespData + '|4|不良品:'+cast(@QtyBad as varchar)+'|0'; 	
 end;

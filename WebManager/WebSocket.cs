@@ -16,19 +16,26 @@ namespace Imms.WebManager
     {
         private SortedList<string, WebSocketClient> ConnectedIdList = new SortedList<string, WebSocketClient>();
         private SortedList<string, KanbanLineData> DataList = new SortedList<string, KanbanLineData>();
+        private SortedList<string, string> _firstSpanList = new SortedList<string, string>();
         public bool Terminated { get; set; }
         private System.Threading.Thread dataPushThread;
         private DbContext dbContext;
         public int MAX_DETAIL_ITEM_COUNT { get; set; }
         public int SKIP_MINUTE { get; set; }
         private SortedList<string, List<WorkshiftSpan>> LineSpanList = new SortedList<string, List<WorkshiftSpan>>();
+        private DateTime lastBadCheckTime = new DateTime(9999,12,31);
+        private DateTime Yestoday = DateTime.Now.Date;
+
+        private const int LIGHT_GREEN = 3;
+        private const int LIGHT_YELLOW = 2;
+        private const int LIGHT_RED = 1;
 
         public LineKanbanHub()
         {
             this.dbContext = GlobalConstants.DbContextFactory.GetContext();
             this.dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             this.MAX_DETAIL_ITEM_COUNT = 4;
-            this.SKIP_MINUTE = 15;
+            this.SKIP_MINUTE = 60;
 
             this.RefreshSpanList();
             this.RefreshWorkshopData();
@@ -65,8 +72,11 @@ namespace Imms.WebManager
                 foreach (Workline line in worklineList.Where(x => x.ParentId == workshop.RecordId))
                 {
                     this.LineSpanList.Add(line.LineCode, allSpanList.Where(x => x.WorkshiftId == workshiftId).ToList());
+
+                    this._firstSpanList.Add(line.LineCode, this.LineSpanList[line.LineCode].OrderBy(x => x.Seq).First().TimeBegin);
                 }
             }
+            this.lastBadCheckTime = new DateTime(9999, 12, 31);
         }
 
         public void Start()
@@ -79,6 +89,11 @@ namespace Imms.WebManager
                         {
                             try
                             {
+                                if (Yestoday.Day != DateTime.Now.Day)
+                                {
+                                    this.RefreshSpanList();
+                                }
+
                                 this.PushData();
                             }
                             catch (Exception e)
@@ -119,10 +134,16 @@ namespace Imms.WebManager
                     }
                     KanbanLineData kabanData = DataList[client.LineNo];
                     this.FillDetailItems(kabanData, client.LineNo);
-                    if(client.MustLight){
+                    if (kabanData.is_break)
+                    {
+                        continue;
+                    }
+
+                    if (client.MustLight)
+                    {
                         this.LigthLamp(kabanData);
                     }
-                } 
+                }
 
                 foreach (string id in this.ConnectedIdList.Keys)
                 {
@@ -139,39 +160,41 @@ namespace Imms.WebManager
         private void LigthLamp(KanbanLineData kabanData)
         {
             DetailItem detailItem = kabanData.line_detail_data.Where(x => x.is_current_item).First();
-            string firstBeginTime = kabanData.line_detail_data.OrderBy(x => x.time_begin).Select(x => x.time_begin).First();
+            string firstBeginTime = this._firstSpanList[kabanData.line_code];
+                //kabanData.line_detail_data.OrderBy(x => x.time_begin).Select(x => x.time_begin).First();
             DateTime firstDateTime = DateTime.Parse(DateTime.Now.ToString("yyyy/MM/dd") + " " + firstBeginTime).AddMinutes(this.SKIP_MINUTE);
 
             int planQty = detailItem.qty_plan;
-            bool toggleLight = false;
-            int curLamp = 0;
-            if (detailItem.qty_bad > 0 || (DateTime.Now > firstDateTime && detailItem.qty_good < planQty))
-            {//如果出现了品质问题或者进度落后，则亮红灯
-                if (kabanData.Lamp != 1)
+            if (detailItem.qty_good < planQty)
+            {
+                DateTime currentTime = DateTime.Now;
+                if (currentTime > firstDateTime && this.lastBadCheckTime > currentTime){
+                    //第一个小时，不亮红灯
+                    this.lastBadCheckTime = currentTime;
+                }
+                if(currentTime.Subtract(this.lastBadCheckTime).TotalMinutes >= 15)
                 {
-                    toggleLight = true;
-                    curLamp = 1;
+                    //正常一直亮绿灯，如果15分钟持续不达标，则亮红灯。
+                    this.lastBadCheckTime = DateTime.Now;
+                    this.DoLight(kabanData, LIGHT_RED);
+                }else if (kabanData.Lamp != LIGHT_GREEN)
+                {
+                    this.DoLight(kabanData, LIGHT_GREEN);
                 }
             }
             else //否则亮绿灯
             {
-                if (kabanData.Lamp != 3)
+                if (kabanData.Lamp != LIGHT_GREEN)
                 {
-                    toggleLight = true;
-                    curLamp = 3;
+                    this.DoLight(kabanData, LIGHT_GREEN);
                 }
-            }
-
-            if (toggleLight)
-            {
-                this.DoLight(kabanData, curLamp);
             }
         }
 
         private void DoLight(KanbanLineData kabanData, int curLamp)
         {
             kabanData.Lamp = curLamp;
-            var gidParam = new SqlParameter("GID", kabanData.GID);                                                
+            var gidParam = new SqlParameter("GID", kabanData.GID);
             var didParam = new SqlParameter("DID", kabanData.DID);
             var lampParam = new SqlParameter("Lamp", kabanData.Lamp);
             this.dbContext.Database.ExecuteSqlCommand("MES_Light @GID,@DID,@Lamp", gidParam, didParam, lampParam);
@@ -219,10 +242,11 @@ namespace Imms.WebManager
         {
             DateTime currentTime = DateTime.Now;
             string date = currentTime.ToString("yyyy/MM/dd");
-            bool isBreak = this.LineSpanList[lineNo].Where(x => x.IsBreak == 1
+            bool isBreak = (this.LineSpanList[lineNo].Where(x => x.IsBreak == 0
                                         && DateTime.Parse(date + " " + x.TimeBegin) <= currentTime
-                                        && DateTime.Parse(date + " " + x.TimeEnd) > currentTime)
-                                        .Count() > 0;
+                                        && DateTime.Parse(date + " " + x.TimeEnd) >= currentTime)
+                                        .Count() == 0)   // 处于休息时间中
+                            ;
             if (isBreak)
             {
                 lineKanbanItem.is_break = true;
@@ -256,7 +280,7 @@ namespace Imms.WebManager
                 if (currentTime >= timeStart && currentTime < timeEnd)
                 {
                     item.is_current_item = true;
-                    item.qty_plan = secconds / lineKanbanItem.clap;
+                    item.qty_plan = secconds * (3600 /lineKanbanItem.line_summary_data.uph);
                 }
                 else
                 {
@@ -272,7 +296,7 @@ namespace Imms.WebManager
                     }
                     else
                     {
-                        item.qty_plan = 3600 / lineKanbanItem.clap;
+                        item.qty_plan = lineKanbanItem.line_summary_data.uph;
                     }
                 }
                 item.qty_good = summmaryList.Where(x => x.SpanId == span.RecordId).Select(x => x.QtyGood).Sum();
@@ -308,14 +332,10 @@ namespace Imms.WebManager
             lineKanbanData.line_summary_data.production_name = activeWorkOrder.PartNo;
             lineKanbanData.line_summary_data.production_order_no = activeWorkOrder.OrderNo;
             lineKanbanData.line_summary_data.person_qty = this.GetLineOperatorCount(lineNo);
-            if (lineKanbanData.line_summary_data.person_qty == 0)
-            {
-                lineKanbanData.line_summary_data.person_qty = 4;
-            }
             lineKanbanData.plan_qty = activeWorkOrder.QtyReq;
-            lineKanbanData.clap = activeWorkOrder.Clap;
             lineKanbanData.time_start_plan = activeWorkOrder.TimeStartPlan;
             lineKanbanData.time_end_plan = activeWorkOrder.TimeEndPlan;
+            lineKanbanData.line_summary_data.uph = activeWorkOrder.UPH;
         }
 
         private int GetLineOperatorCount(string lineNo)
@@ -355,7 +375,6 @@ namespace Imms.WebManager
         public int Lamp { get; set; } // 1.红灯   2.黄灯  3.绿灯
 
         public int plan_qty { get; set; }
-        public int clap { get; set; }
         public bool is_break { get; set; }
 
         public DateTime time_start_plan { get; set; }

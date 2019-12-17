@@ -36,17 +36,10 @@ namespace Imms.WebManager
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
-            //services.Configure<CookiePolicyOptions>(options =>
-            //{
-            //    // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-            //    options.CheckConsentNeeded = context => true;
-            //    options.MinimumSameSitePolicy = SameSiteMode.None;
-            //});
+        {            
             services.AddSession();
             services.AddMvc(config =>
-            {
-                // config.Filters.Add(new AuthenticationFilter());
+            {                
                 config.Filters.Add(new ExtJsResponseBodyFilter());
             })
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
@@ -59,14 +52,6 @@ namespace Imms.WebManager
                 x.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 x.SerializerSettings.Formatting = Formatting.Indented;
             });
-
-            // services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(
-            //     options =>
-            //     {
-            //         options.LoginPath = new PathString("/login");
-            //         options.AccessDeniedPath = new PathString("/Denied");
-            //     }
-            // );
 
             services.AddAuthentication(x =>
             {

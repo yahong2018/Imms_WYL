@@ -16,7 +16,7 @@ namespace Imms.Mes.Data.Domain
         public int QtyReq { get; set; }
         public int QtyGood { get; set; }
         public int QtyBad { get; set; }
-        public int Clap { get; set; }
+        public int UPH { get; set; }
 
         public DateTime TimeStartPlan { get; set; }
         public DateTime TimeEndPlan { get; set; }
@@ -99,7 +99,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.TimeEndPlan).HasColumnName("time_end_plan");
             builder.Property(e => e.TimeStartActual).HasColumnName("time_start_actual");
             builder.Property(e => e.TimeEndActual).HasColumnName("time_end_actual");
-            builder.Property(e => e.Clap).HasColumnName("clap");
+            builder.Property(e => e.UPH).HasColumnName("uph");
         }
     }
 

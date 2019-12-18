@@ -164,7 +164,7 @@ function fill_detail_data(config) {
     total_plan = total_actual = total_good = total_bad = max_qty = 0;
     config.good_items.push(0);
     config.bad_items.push(0);
-    var mustContinue = false;
+    var current_seq = -1;
     for (var i = 0; i < detail_items.length; i++) {
         var item = detail_items[i];
         var row = table.rows[i + 1];
@@ -182,31 +182,49 @@ function fill_detail_data(config) {
             percentOfBad = 0;
         }
 
-        config.hours.push(item.time_begin);     
-        if (!mustContinue) {
+        config.hours.push(item.time_begin);        
+        if (current_seq == -1) {
             config.good_items.push(percentOfProducton.toFixed(1));
             config.bad_items.push(percentOfBad.toFixed(1));
-        }        
 
-        fill_row(row, {
-            period: item.time_begin + "~" + item.time_end,
-            qty_plan: item.qty_plan,
-            qty_good: item.qty_good,
-            qty_bad: item.qty_bad,
-            sub_total: sub_total,
-            percentOfPass: percentOfPass.toFixed(1) + "%",
-            percentOfProducton: percentOfProducton.toFixed(1) + "%"
-        });
+            fill_row(row, {
+                period: item.time_begin + "~" + item.time_end,
+                qty_plan: item.qty_plan,
+                qty_good: item.qty_good,
+                qty_bad: item.qty_bad,
+                sub_total: sub_total,
+                percentOfPass: percentOfPass.toFixed(1) + "%",
+                percentOfProducton: percentOfProducton.toFixed(1) + "%"
+            });            
+
+            if (percentOfProducton < 98) {
+                row.cells[6].style.color = 'red';
+            } else {
+                row.cells[6].style.color = 'white';
+            }
+        }else{
+            row.cells[6].style.color = 'white';
+
+            fill_row(row, {
+                period: item.time_begin + "~" + item.time_end,
+                qty_plan: "-",
+                qty_good: "-",
+                qty_bad: "-",
+                sub_total: "-",
+                percentOfPass: "-",
+                percentOfProducton: "-"
+            });             
+        }
 
         total_good += item.qty_good;
         total_bad += item.qty_bad;
         total_plan += item.qty_plan;
         total_actual += sub_total;
-
+     
         if (item.is_current_item == true) {
-            mustContinue = true;
+            current_seq = item.seq;
         }
-    }    
+    }
     config.hours.push(detail_items[detail_items.length - 1].time_end);
 
     var row_summary = table.rows[table.rows.length - 1];
@@ -314,14 +332,16 @@ var lineNo = getQueryVariable("lineNo");
 var mustLight = getQueryVariable("mustLight");
 function start_connection() {
     connection.start().then(function () {
-        connection.invoke("RegisterWebClient", lineNo, mustLight);
+        connection.invoke("RegisterWebClient", lineNo);
         console.log("connected");
     }).catch(function () {
+        console.log("start connect...");
         setTimeout(start_connection, 5000);
     });
 };
 
 connection.onclose(function () {
+    console.log("closed,start connect...");
     start_connection();
 });
 

@@ -3,19 +3,34 @@ using System.Linq;
 using System.Transactions;
 using Imms.Data;
 using Imms.Mes.Data.Domain;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Imms.Mes.Data
 {
     public class WorkorderLogic : SimpleCRUDLogic<Workorder>
-    {
+    {        
+        private IApplicationBuilder _App;
+        public WorkorderLogic(IApplicationBuilder app){
+            this._App = app;
+        }
+
         public void StartWorkder(Workorder workorder)
         {
             if (workorder.OrderStatus > 0)
             {
                 return;
             }
-            workorder.OrderStatus = 1;
+            this.DoStart(workorder);
+
+            Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();            
+            dataService.RefreshActiveWorkorders();            
+        }
+
+        private void DoStart(Workorder workorder)
+        {
+            workorder.OrderStatus = Workorder.WOKORDER_STATUS_STARTED;
             workorder.TimeStartActual = DateTime.Now;
 
             using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required))
@@ -35,9 +50,9 @@ namespace Imms.Mes.Data
                     else
                     {
                         Workorder oldOrder = dbContext.Set<Workorder>().Where(x => x.OrderNo == active.WorkorderNo).First();
-                        if (oldOrder.OrderStatus != 255 && oldOrder.OrderNo != workorder.OrderNo)
+                        if (oldOrder.OrderStatus != Workorder.WORKORDER_SATUS_CLOSED && oldOrder.OrderNo != workorder.OrderNo)
                         {
-                            oldOrder.OrderStatus = 255;
+                            oldOrder.OrderStatus = Workorder.WORKORDER_SATUS_CLOSED;
                             oldOrder.TimeEndActual = DateTime.Now;
 
                             GlobalConstants.ModifyEntityStatus<Workorder>(oldOrder, dbContext);

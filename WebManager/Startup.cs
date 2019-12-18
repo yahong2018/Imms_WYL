@@ -36,10 +36,10 @@ namespace Imms.WebManager
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {            
+        {
             services.AddSession();
             services.AddMvc(config =>
-            {                
+            {
                 config.Filters.Add(new ExtJsResponseBodyFilter());
             })
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
@@ -104,15 +104,16 @@ namespace Imms.WebManager
             ImmsDbContext.RegisterModelBuilders(new Imms.Mes.Data.MesModelBuilder());
 
             GlobalConstants.GetCurrentUserDelegate = Security.Data.SystemUserLogic.GetCurrentUser;
-
-            services.AddSignalR();
-            services.AddSingleton<LineKanbanHub,LineKanbanHub>();    
             services.AddHttpClient();
+
+            this.RegisterKanbanServices(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            Startup.AppBuiloder = app;
+
             app.UseExceptionHandler(builder =>
               {
                   builder.Run(async context =>
@@ -146,13 +147,7 @@ namespace Imms.WebManager
 
             app.UseErrorHandling();
             app.UseAuthentication();
-
             Imms.HttpContext.Configure(app.ApplicationServices.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>());
-
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<LineKanbanHub>("/LineKanbanHub/line");
-            });
 
             app.UseMvc(routes =>
             {
@@ -161,9 +156,39 @@ namespace Imms.WebManager
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            LineKanbanHub lineKanban = app.ApplicationServices.GetService<LineKanbanHub>();
-            lineKanban.Start();
+            this.StartKanban(app);
         }
+
+        private void RegisterKanbanServices(IServiceCollection services)
+        {
+            services.AddSignalR();
+
+            services.AddSingleton<Imms.Mes.Services.Kanban.Line.DataService, Imms.Mes.Services.Kanban.Line.DataService>();
+            services.AddSingleton<Imms.Mes.Services.Kanban.Line.LampService, Imms.Mes.Services.Kanban.Line.LampService>();
+            services.AddSingleton<Imms.Mes.Services.Kanban.Line.LineKanbanHub, Imms.Mes.Services.Kanban.Line.LineKanbanHub>();
+        }
+
+        private void StartKanban(IApplicationBuilder app)
+        {
+            app.UseSignalR(routes =>
+            {
+                //  routes.MapHub<LineKanbanHub>("/LineKanbanHub/line");
+                routes.MapHub<Imms.Mes.Services.Kanban.Line.LineKanbanHub>("/LineKanbanHub/line");
+            });
+
+            Imms.Mes.Services.Kanban.Line.DataService dataService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
+            dataService.Config();            
+            Imms.Mes.Services.Kanban.Line.LampService lampService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.LampService>();
+            lampService.Config();
+
+            dataService.Startup();
+            lampService.Startup();
+
+            Imms.Mes.Services.Kanban.Line.LineKanbanHub kanbanHub = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.LineKanbanHub>();
+            kanbanHub.Start();
+        }
+
+        public static IApplicationBuilder AppBuiloder{get; private set;}
     }
 
     public class DbContextFactory : IDbContextFactory

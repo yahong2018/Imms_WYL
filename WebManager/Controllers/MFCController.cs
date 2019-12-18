@@ -19,7 +19,7 @@ namespace Imms.WebManager.Controllers
     {
         public WorkorderController()
         {
-            this.Logic = new WorkorderLogic();
+            this.Logic = new WorkorderLogic(Startup.AppBuiloder);
         }
 
         [Route("start"), HttpPost]

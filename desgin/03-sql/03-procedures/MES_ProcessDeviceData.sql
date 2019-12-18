@@ -20,7 +20,7 @@ begin
     declare @DefectCode varchar(20),@WorkstationCode varchar(20), @WorkstationName varchar(50), @WorkorderNo varchar(20),@LineNo varchar(20);
     declare @RecordType int,@SpanId int,@DefectReportMethod int,@ProductDate datetime,@PartNo varchar(50);
     declare @QtyGood int,@QtyBad int,@QtyPlan int,@lock int,@Hours int,@IsLastWorkstation bit,@WorkstationSeq int;
-	declare @LineId bigint,@WorkshiftCode varchar(20),@WorkshopId bigint;    
+	declare @LineId bigint,@WorkshiftCode varchar(20),@WorkshopId bigint,@OrgType varchar(20),@Lamp int;    
     
     select @RespData ='',@DefectCode='',@WorkstationCode='',@WorkorderNo='',@RecordType=-1,@SpanId=-1,
            @QtyGood = 0,@QtyBad = 0 ,@QtyPlan = 0;
@@ -38,7 +38,9 @@ begin
 		return;
 	end;
 
-    select @WorkstationCode = org_code,@LineId = parent_id, @WorkstationName = org_name, @DefectReportMethod = defect_report_method,@WorkstationSeq = seq
+    select @WorkstationCode = org_code,@LineId = parent_id, @WorkstationName = org_name, 
+          @DefectReportMethod = defect_report_method,@WorkstationSeq = seq,
+          @OrgType = org_type
         from mes_org where gid = @GID and did = @DID;
     if(@WorkstationCode = '')begin
 		set @RespData ='2|1|4';
@@ -49,6 +51,25 @@ begin
 
         return;
     end;
+
+    if(@OrgType='ORG_WORK_LINE') begin
+        if (not @ReqData in('1','3')) begin
+            set @RespData ='2|1|3';
+            set @RespData = @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+            set @RespData = @RespData + '|1|红灯按1|0';
+            set @RespData = @RespData + '|2|绿灯按3.|0';                  
+        end else begin
+            set @Lamp = cast(@ReqData as int);
+            exec MES_Light @GID,@DID,@Lamp;
+
+            set @RespData ='2|1|3';
+            set @RespData = @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+            set @RespData = @RespData + '|1|已处理，|0';
+            set @RespData = @RespData + '|2|请查看灯|0';             
+        end;
+        return;
+    end;
+    
 	
     select @LineNo = L.org_code,@WorkshopId = parent_id  from mes_org  L  where L.record_id = @LineId;
     select top 1 @WorkorderNo = workorder_no,@PartNo = part_no  from mes_active_workorder A   where A.line_no = @LineNo;

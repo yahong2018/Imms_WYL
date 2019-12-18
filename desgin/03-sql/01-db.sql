@@ -221,11 +221,12 @@ create table mes_workorder
     line_no           varchar(20)      not null,
     customer_no       varchar(50)      not null,
     part_no           varchar(50)      not null,
+    part_name         varchar(50)      not null,
 
     qty_req           int              not null,
     qty_good          int              not null default 0,
-    qty_bad           int              not null default 0,
-    clap              int              not null,
+    qty_bad           int              not null default 0,   
+    uph               int              not null,
 
     time_start_plan   datetime         not null,
     time_end_plan     datetime         not null,

@@ -12,6 +12,7 @@ namespace Imms.Mes.Data.Domain
         public string LineNo { get; set; }
         public string CustomerNo { get; set; }
         public string PartNo { get; set; }
+        public string PartName { get; set; }
 
         public int QtyReq { get; set; }
         public int QtyGood { get; set; }
@@ -23,6 +24,10 @@ namespace Imms.Mes.Data.Domain
 
         public DateTime? TimeStartActual { get; set; }
         public DateTime? TimeEndActual { get; set; }
+
+        public const int WORKORDER_STATUS_INITED = 0;
+        public const int WOKORDER_STATUS_STARTED = 1;
+        public const int WORKORDER_SATUS_CLOSED = 255;
     }
 
     public class WorkorderActual : Entity<long>
@@ -91,6 +96,8 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.CustomerNo).HasColumnName("customer_no");
             builder.Property(e => e.LineNo).HasColumnName("line_no");
             builder.Property(e => e.PartNo).HasColumnName("part_no");
+            builder.Property(e => e.PartName).HasColumnName("part_name");
+            
             builder.Property(e => e.QtyReq).HasColumnName("qty_req");
             builder.Property(e => e.QtyGood).HasColumnName("qty_good");
             builder.Property(e => e.QtyBad).HasColumnName("qty_bad");
@@ -99,6 +106,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.TimeEndPlan).HasColumnName("time_end_plan");
             builder.Property(e => e.TimeStartActual).HasColumnName("time_start_actual");
             builder.Property(e => e.TimeEndActual).HasColumnName("time_end_actual");
+
             builder.Property(e => e.UPH).HasColumnName("uph");
         }
     }
@@ -153,7 +161,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.PartNo).HasColumnName("part_no");
             builder.Property(e => e.ProductDate).HasColumnName("product_date");
 
-            builder.Property(e => e.SpanId).HasColumnName("span_id");            
+            builder.Property(e => e.SpanId).HasColumnName("span_id");
             builder.Property(e => e.QtyGood).HasColumnName("qty_good");
             builder.Property(e => e.QtyBad).HasColumnName("qty_bad");
         }

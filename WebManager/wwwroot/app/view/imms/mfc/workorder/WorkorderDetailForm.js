@@ -24,13 +24,14 @@ Ext.define("app.view.imms.mfc.workorder.WorkorderDetailForm", {
                 { xtype: "label", margin: '8 20 5 15', text: "0.已计划  1.已开工   254.已取消   255.已完工" },
             ]
         },
+        { name: "lineNo", xtype: "textfield", fieldLabel: '产线', width: 280, allowBlank: false, },
         {
             xtype: "container",
             layout: "hbox",
             margin: '0 0 3 ',
             items: [
-                { name: "lineNo", xtype: "textfield", fieldLabel: '产线', width:280, allowBlank: false, },
-                { name: "partNo", xtype: "textfield", margin: '0 20 0 15',fieldLabel: '产品编号', width:280, allowBlank: false, },
+                { name: "partNo", xtype: "textfield",fieldLabel: '产品编号', width:280, allowBlank: false, },
+                { name: "partName", xtype: "textfield", margin: '0 20 0 15', fieldLabel: '产品名称', width: 280, allowBlank: false, },
             ]
         },
         {
@@ -42,6 +43,7 @@ Ext.define("app.view.imms.mfc.workorder.WorkorderDetailForm", {
                 { name: "qtyReq", xtype: "textfield", margin: '0 20 0 15', fieldLabel: '计划数量', width:280, allowBlank: false, },
             ]
         },
+        { name: "uph", xtype: "textfield", fieldLabel: 'UPH', width: 280, allowBlank: false, },
         {
             xtype: "container",
             layout: "hbox",

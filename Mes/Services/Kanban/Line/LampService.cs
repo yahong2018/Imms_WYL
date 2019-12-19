@@ -138,7 +138,7 @@ namespace Imms.Mes.Services.Kanban.Line
                 }
 
                 TimeSpan span = currentTime.Subtract(lastCheckTime);
-                if (span.TotalMinutes >= 15)   //连续15分钟检查亮绿灯
+               // if (span.TotalMinutes >= 1)   //连续15分钟检查亮绿灯
                 {
                     targetLamp = LAMP_RED;
                 }

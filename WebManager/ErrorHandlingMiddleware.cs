@@ -30,49 +30,69 @@ namespace Imms.WebManager
                 {
                     statusCode = 200;
                 }
-                await HandleExceptionAsync(context, ex,statusCode);
+                try
+                {
+                    await HandleExceptionAsync(context, ex, statusCode);
+                }
+                catch
+                {
+                }
             }
             finally
             {
                 var statusCode = context.Response.StatusCode;
-                var msg = "";
-                if (statusCode == 401)
+                if (statusCode != 101)
                 {
-                    if (context.Request.Path.ToString() == "/"
-                        || context.Request.Path.ToString() == "/home"
-                        || context.Request.Path.ToString() == context.Request.PathBase.ToString()
-                        || context.Request.Path.ToString() == ""
-                    )
-                    {
-                        context.Response.Redirect(context.Request.PathBase + "/login");
-                    }
-                    else
-                    {
-                        msg = "未授权";
-                    }
+                    await ProcessError(context, statusCode);
                 }
-                else if (statusCode == 404)
+            }
+        }
+
+        private static async Task ProcessError(Microsoft.AspNetCore.Http.HttpContext context, int statusCode)
+        {
+            var msg = "";
+            if (statusCode == 401)
+            {
+                if (context.Request.Path.ToString() == "/"
+                    || context.Request.Path.ToString() == "/home"
+                    || context.Request.Path.ToString() == context.Request.PathBase.ToString()
+                    || context.Request.Path.ToString() == ""
+                )
                 {
-                    msg = "未找到服务";
+                    context.Response.Redirect(context.Request.PathBase + "/login");
                 }
-                else if (statusCode == 502)
+                else
                 {
-                    msg = "请求错误";
+                    msg = "未授权";
                 }
-                else if (statusCode != 200)
-                {
-                    msg = "未知错误";
-                }
-                if (!string.IsNullOrWhiteSpace(msg))
+            }
+            else if (statusCode == 404)
+            {
+                msg = "未找到服务";
+            }
+            else if (statusCode == 502)
+            {
+                msg = "请求错误";
+            }
+            else if (statusCode != 200)
+            {
+                msg = "未知错误";
+            }
+            if (!string.IsNullOrWhiteSpace(msg))
+            {
+                try
                 {
                     await HandleExceptionAsync(context, statusCode, msg);
+                }
+                catch
+                {
                 }
             }
         }
 
         private static Task HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext context, int statusCode, string msg)
         {
-            var result = JsonConvert.SerializeObject(new ApiResult() { Success = false, Data = new ApiResultData() { ExceptionCode = statusCode,RequestUrl = context.Request.Path, Message = msg } });
+            var result = JsonConvert.SerializeObject(new ApiResult() { Success = false, Data = new ApiResultData() { ExceptionCode = statusCode, RequestUrl = context.Request.Path, Message = msg } });
             GlobalConstants.DefaultLogger.Error(result);
 
             context.Response.ContentType = "application/json;charset=utf-8";
@@ -81,7 +101,7 @@ namespace Imms.WebManager
 
         //异常错误信息捕获，将错误信息用Json方式返回
         private static Task HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext context, Exception ex, int statusCode)
-        {            
+        {
             StringBuilder builder = new StringBuilder(ex.Message);
             ErrorHandlingMiddleware.GetExceptionMessage(ex, builder);
             ApiResult apiResult = new ApiResult() { Success = false, Data = new ApiResultData() { Message = builder.ToString(), RequestUrl = context.Request.Path, ExceptionCode = statusCode } };
@@ -99,8 +119,8 @@ namespace Imms.WebManager
             return context.Response.WriteAsync(result);
         }
 
-        private static void GetExceptionMessage(Exception ex,StringBuilder builder)
-        {            
+        private static void GetExceptionMessage(Exception ex, StringBuilder builder)
+        {
             if (ex.InnerException != null)
             {
                 builder.Append("\r\n");

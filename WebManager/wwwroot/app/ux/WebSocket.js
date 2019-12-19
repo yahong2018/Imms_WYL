@@ -16,7 +16,7 @@ Ext.define('app.ux.WebSocket', {
     },
 
     open: function() {
-        var websocket = new WebSocket(this.url);
+        var websocket = new WebSocket("");
         this.websocket = websocket;
         var me = this;
         websocket.onopen = function() {

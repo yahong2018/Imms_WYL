@@ -25,7 +25,7 @@ namespace Imms.Data
             //if (categoryName == "Microsoft.EntityFrameworkCore.Database.Command"/* && logLevel == LogLevel.Information*/)
             {
                 var logContent = formatter(state, exception);
-                GlobalConstants.DefaultLogger.WriteMessage(logContent,logLevel);
+                GlobalConstants.DefaultLogger.Debug(logContent);
             }
         }
         public IDisposable BeginScope<TState>(TState state) => null;

@@ -48,6 +48,11 @@ namespace Imms.Security.Data
         public static SecurityTokenDescriptor LoginWithApi(string userCode, string password, Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
             SystemUser systemUser = SystemUserLogic.VerifyLoginAccount(userCode, password);
+            return CreateDescriptor(systemUser);
+        }
+
+        public static SecurityTokenDescriptor CreateDescriptor(SystemUser systemUser)
+        {
             byte[] key = Encoding.ASCII.GetBytes(GlobalConstants.JWT_SECRET_STRING);
             DateTime authTime = DateTime.UtcNow;
             DateTime expiresAt = authTime.AddDays(7);
@@ -69,7 +74,6 @@ namespace Imms.Security.Data
             };
             return tokenDescriptor;
         }
-
 
         public static SystemUser VerifyLoginAccount(string userCode, string password)
         {

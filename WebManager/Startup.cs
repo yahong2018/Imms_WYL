@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using IdentityModel;
 using System.Text;
+using Imms.Mes.Services;
 
 namespace Imms.WebManager
 {
@@ -149,46 +150,56 @@ namespace Imms.WebManager
             app.UseAuthentication();
             Imms.HttpContext.Configure(app.ApplicationServices.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>());
 
+            this.StartKanban(app);
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-            this.StartKanban(app);
         }
 
         private void RegisterKanbanServices(IServiceCollection services)
         {
-            services.AddSignalR();
+            // services.AddSignalR();
 
             services.AddSingleton<Imms.Mes.Services.Kanban.Line.DataService, Imms.Mes.Services.Kanban.Line.DataService>();
             services.AddSingleton<Imms.Mes.Services.Kanban.Line.LampService, Imms.Mes.Services.Kanban.Line.LampService>();
-            services.AddSingleton<Imms.Mes.Services.Kanban.Line.LineKanbanHub, Imms.Mes.Services.Kanban.Line.LineKanbanHub>();
+            // services.AddSingleton<Imms.Mes.Services.Kanban.Line.LineKanbanHub, Imms.Mes.Services.Kanban.Line.LineKanbanHub>();
+
+           services.AddWebSocketManager();
         }
 
         private void StartKanban(IApplicationBuilder app)
         {
-            app.UseSignalR(routes =>
-            {
-                //  routes.MapHub<LineKanbanHub>("/LineKanbanHub/line");
-                routes.MapHub<Imms.Mes.Services.Kanban.Line.LineKanbanHub>("/LineKanbanHub/line");
-            });
+            // app.UseSignalR(routes =>
+            // {
+            //     //  routes.MapHub<LineKanbanHub>("/LineKanbanHub/line");
+            //     routes.MapHub<Imms.Mes.Services.Kanban.Line.LineKanbanHub>("/LineKanbanHub/line");
+            // });
 
             Imms.Mes.Services.Kanban.Line.DataService dataService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
-            dataService.Config();            
+            dataService.Config();
             Imms.Mes.Services.Kanban.Line.LampService lampService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.LampService>();
             lampService.Config();
 
             dataService.Startup();
             lampService.Startup();
 
-            Imms.Mes.Services.Kanban.Line.LineKanbanHub kanbanHub = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.LineKanbanHub>();
-            kanbanHub.Start();
+            // Imms.Mes.Services.Kanban.Line.LineKanbanHub kanbanHub = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.LineKanbanHub>();
+            // kanbanHub.Start();               
+
+            var webSocketOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(120),
+                ReceiveBufferSize = 4 * 1024
+            };
+           app.UseWebSockets(webSocketOptions);
+           app.MapWebSocketManager("/ws", app.ApplicationServices.GetService<Mes.Services.Kanban.Line.LineKanbanService>());
         }
 
-        public static IApplicationBuilder AppBuiloder{get; private set;}
+        public static IApplicationBuilder AppBuiloder { get; private set; }
     }
 
     public class DbContextFactory : IDbContextFactory

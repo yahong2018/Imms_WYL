@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using IdentityModel;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Imms.Mes.Services.Kanban.Line
@@ -11,7 +14,7 @@ namespace Imms.Mes.Services.Kanban.Line
         private DataService _DataService = null;
         public bool Terminated { get; set; }
         private System.Threading.Thread _DieCheckThread;
-        private SortedList<string, WebSocketClient> _ConnectedIdList = new SortedList<string, WebSocketClient>();
+        private List<WebSocketClient> _ClientList = new List<WebSocketClient>();
 
         public LineKanbanHub(DataService dataService)
         {
@@ -20,48 +23,64 @@ namespace Imms.Mes.Services.Kanban.Line
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            string id = Context.ConnectionId;
+            Claim claim = this.GetClaim(JwtClaimTypes.Id);
+            if (claim == null)
+            {
+                return base.OnDisconnectedAsync(exception);
+            }
+
+            string userId = claim.Value;
+            GlobalConstants.DefaultLogger.Info(string.Format("ConnectionId:{0},UserId:{1}已断开.", Context.ConnectionId, userId));
             lock (this)
             {
-                if (this._ConnectedIdList.ContainsKey(id))
+                foreach (WebSocketClient client in this._ClientList)
                 {
-                    WebSocketClient client = this._ConnectedIdList[id];
-                    GlobalConstants.DefaultLogger.Info(client.LineNo + "的看板已断开");
-                    client.Shutdown();
+                    if (client.UserId == userId)
+                    {
+                        client.Shutdown();
+                        GlobalConstants.DefaultLogger.Info(client.LineNo + "的看板服务已停止.");
 
-                    this._ConnectedIdList.Remove(id);
+                        break;
+                    }
                 }
             }
             return base.OnDisconnectedAsync(exception);
         }
 
+        private Claim GetClaim(string type){
+            foreach(Claim claim in Context.User.Claims){
+                if(claim.Type == type){
+                    return claim;
+                }
+            }
+            return null;
+        }
+
         public void RegisterWebClient(string lineNo)
         {
-            GlobalConstants.DefaultLogger.Info("收到来自" + lineNo + "的看板请求连接...");
-            string id = Context.ConnectionId;
+            Claim claim = this.GetClaim(JwtClaimTypes.Id);
+            if (claim == null)
+            {             
+                this.Context.Abort();   
+                return;
+            }
+            string userId = claim.Value;
+            GlobalConstants.DefaultLogger.Info(string.Format("ConnectionId:{0},LineNo:{1},UserId:{2}已连接.", Context.ConnectionId, lineNo, userId));
 
             lock (this)
             {
-                WebSocketClient client;
-                if (!this._ConnectedIdList.ContainsKey(id))
-                {
-                    client = new WebSocketClient();
-                    client.ConnectionId = id;
-                    client.LineNo = lineNo;
-                    this._ConnectedIdList.Add(id, client);
-                }
-                else
-                {
-                    client = this._ConnectedIdList[id];
-                }
+                WebSocketClient client = new WebSocketClient();
 
-                client.Proxy = this.Clients.Client(id);
+                client = new WebSocketClient();
+                client.ConnectionId = Context.ConnectionId;
+                client.LineNo = lineNo;
+                client.UserId = userId;
+                client.Hub = this;
                 client.DataService = this._DataService;
-                if (client.Status == ServiceStatus.Stopped)
-                {
-                    client.Config();
-                    client.Startup();
-                }
+
+                this._ClientList.Add(client);
+                client.Config();
+                client.Startup();
             }
         }
 
@@ -69,12 +88,12 @@ namespace Imms.Mes.Services.Kanban.Line
         {
             lock (this)
             {
-                foreach (WebSocketClient client in this._ConnectedIdList.Values)
+                foreach (WebSocketClient client in this._ClientList)
                 {
                     client.Shutdown();
                 }
 
-                this._ConnectedIdList.Clear();
+                this._ClientList.Clear();
             }
         }
 
@@ -90,13 +109,12 @@ namespace Imms.Mes.Services.Kanban.Line
                             {
                                 lock (this)
                                 {
-                                    for (int i = 0; i < this._ConnectedIdList.Count; i++)
+                                    for (int i = 0; i < this._ClientList.Count; i++)
                                     {
-                                        string id = this._ConnectedIdList.Keys[i];
-                                        WebSocketClient client = this._ConnectedIdList[id];
+                                        WebSocketClient client = this._ClientList[i];
                                         if (client.Terminated)
                                         {
-                                            this._ConnectedIdList.Remove(id);
+                                            this._ClientList.RemoveAt(i);
                                             i--;
                                         }
                                     }
@@ -119,10 +137,10 @@ namespace Imms.Mes.Services.Kanban.Line
     public class WebSocketClient : BaseService
     {
         public string ConnectionId { get; set; }
+        public string UserId { get; set; }
         public string LineNo { get; set; }
-        public IClientProxy Proxy { get; set; }
+        public LineKanbanHub Hub { get; set; }
         public DataService DataService { get; set; }
-
 
         public override bool Config()
         {
@@ -138,7 +156,7 @@ namespace Imms.Mes.Services.Kanban.Line
             {
                 try
                 {
-                    Proxy.SendAsync("OnServerData", data);
+                    Hub.Clients.User(this.UserId).SendAsync("OnServerData", data);
                 }
                 catch (Exception e)
                 {

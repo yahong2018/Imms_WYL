@@ -182,7 +182,7 @@ function fill_detail_data(config) {
             percentOfBad = 0;
         }
 
-        config.hours.push(item.time_begin);
+        config.hours.push(item.time_begin);        
         if (current_seq == -1) {
             config.good_items.push(percentOfProducton.toFixed(1));
             config.bad_items.push(percentOfBad.toFixed(1));
@@ -195,14 +195,14 @@ function fill_detail_data(config) {
                 sub_total: sub_total,
                 percentOfPass: percentOfPass.toFixed(1) + "%",
                 percentOfProducton: percentOfProducton.toFixed(1) + "%"
-            });
+            });            
 
             if (percentOfProducton < 98) {
                 row.cells[6].style.color = 'red';
             } else {
                 row.cells[6].style.color = 'white';
             }
-        } else {
+        }else{
             row.cells[6].style.color = 'white';
 
             fill_row(row, {
@@ -213,14 +213,14 @@ function fill_detail_data(config) {
                 sub_total: "-",
                 percentOfPass: "-",
                 percentOfProducton: "-"
-            });
+            });             
         }
 
         total_good += item.qty_good;
         total_bad += item.qty_bad;
         total_plan += item.qty_plan;
         total_actual += sub_total;
-
+     
         if (item.is_current_item == true) {
             current_seq = item.seq;
         }
@@ -276,7 +276,10 @@ function fill_detail_summary() {
     row_total.cells[5].innerText = (((total_actual == 0) ? 0 : (total_bad / total_actual)) * 100).toFixed(1) + "%";
 }
 
-function on_server_data() {   
+var connection = new signalR.HubConnectionBuilder().withUrl("/LineKanbanHub/line").build();
+
+connection.on("OnServerData", function (dataItem) {
+    server_data = dataItem;
     if (server_data.is_break) {
         return;  //休息时间不更新数据
     }
@@ -290,7 +293,14 @@ function on_server_data() {
     fill_detail_data({ good_items: good_items, bad_items: bad_items, hours: hours });
     fill_detail_summary();
 
+    // if (max_qty <= 100) {
+    //     max_qty = 100;
+    // }
+
     var options = {
+        // yAxis: {
+        //     max: max_qty
+        // },
         xAxis: {
             data: hours
         },
@@ -306,7 +316,7 @@ function on_server_data() {
         ]
     };
     myChart.setOption(options);
-};
+});
 
 function getQueryVariable(variable) {
     var query = window.location.search.substring(1);
@@ -317,55 +327,25 @@ function getQueryVariable(variable) {
     }
     return (false);
 }
+
 var lineNo = getQueryVariable("lineNo");
-var WebSocketProxy = {
-    open: function () {
-        try {
-            var scheme = document.location.protocol === "https:" ? "wss" : "ws";
-            var port = document.location.port ? (":" + document.location.port) : "";
-            var url = scheme + "://" + document.location.hostname + port + "/ws";
-            var websocket = new WebSocket(url);
-            
-            this.websocket = websocket;
-            var me = this;
-            websocket.onopen = function () {
-                console.log("connected,before login...");
-                me.send(lineNo);
-                console.log("after logined");
-            };
-            websocket.onerror = function (evt) {
-                console.log("error");
-                me.reconnect();
-            };
-            websocket.onclose = function () {
-                console.log("closed.");
-                me.reconnect();
-            };
-            websocket.onmessage = function (evt) {
-                try {
-                    server_data = JSON.parse(evt.data);
-                    on_server_data();
-                } catch(e){
-                }
-            };
-        } catch (e) {
-        }
-    },
-    reconnect: function () {
-        console.log("begin reconnect ...");
-        setTimeout(this.open(), 1000 * 10);
-    },
-    close: function () {
-        this.websocket.close();
-        this.websocket = null;
-    },
-    send: function (msg) {
-        this.websocket.send(msg);
-    }
+var mustLight = getQueryVariable("mustLight");
+function start_connection() {
+    connection.start().then(function () {
+        connection.invoke("RegisterWebClient", lineNo);
+        console.log("connected");
+    }).catch(function () {
+        console.log("start connect...");
+        setTimeout(start_connection, 5000);
+    });
 };
 
-WebSocketProxy.open();
+connection.onclose(function () {
+    console.log("closed,start connect...");
+    start_connection();
+});
 
+start_connection();
 fill_line_code();
 fill_line_summary();
 fill_detail_data({ good_items: [], bad_items: [], hours: [] });

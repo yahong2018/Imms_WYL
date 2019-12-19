@@ -1,11 +1,15 @@
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading;
 using Imms.Data;
 using Imms.Mes.Data.Domain;
+using Imms.Security.Data;
+using Imms.Security.Data.Domain;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Imms.WebManager.Controllers
 {
@@ -24,6 +28,12 @@ namespace Imms.WebManager.Controllers
         public IActionResult Index()
         {
             string lineNo = this.Request.Query["lineNo"];
+            if (string.IsNullOrEmpty(lineNo))
+            {
+                lineNo = "TEST";
+            }
+          //  this.LoginWithLineNo(lineNo);
+
             Operator[] operators = CommonRepository.GetAllByFilter<Operator>(x => x.orgCode == lineNo && x.Seq != -1).OrderBy(x => x.Seq).Take(4).ToArray();
 
             OperatorItem[] OperatorList = new OperatorItem[]{
@@ -44,6 +54,19 @@ namespace Imms.WebManager.Controllers
             ViewBag.OperatorList = OperatorList;
 
             return View("Line");
+        }
+
+        private void LoginWithLineNo(string lineNo)
+        {
+            SystemUser user = new SystemUser();
+            user.UserCode = Guid.NewGuid().ToString();
+            user.Email = "admin@zhxh.com";
+            user.UserName = lineNo;
+            SecurityTokenDescriptor tokenDescriptor = SystemUserLogic.CreateDescriptor(user);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+            HttpContext.Session.Set(GlobalConstants.AUTHROIZATION_SESSION_KEY, System.Text.Encoding.UTF8.GetBytes(tokenString));
         }
 
         // [Route("line")]

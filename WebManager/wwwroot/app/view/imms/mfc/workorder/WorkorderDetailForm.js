@@ -1,6 +1,7 @@
 Ext.define("app.view.imms.mfc.workorder.WorkorderDetailForm", {
     extend: "Ext.form.Panel",
     xtype: "imms_mfc_workorder_WorkorderDetailForm",
+    requires:["app.ux.DateTimeField"],
     padding: 5,
     width: 600,
     layout: "anchor",
@@ -49,8 +50,8 @@ Ext.define("app.view.imms.mfc.workorder.WorkorderDetailForm", {
             layout: "hbox",
             margin: '0 0 3 ',
             items: [
-                { name: "timeStartPlan", xtype: "textfield", fieldLabel: '计划开工', width:280, allowBlank: false, },
-                { name: "timeEndPlan", xtype: "textfield", margin: '0 20 0 15', fieldLabel: '计划完工', width:280, allowBlank: false, },
+                { name: "timeStartPlan", xtype: "datetimefield", fieldLabel: '计划开工', width: 280, allowBlank: false, format: 'Y-m-d H:i',},
+                { name: "timeEndPlan", xtype: "datetimefield", margin: '0 20 0 15', fieldLabel: '计划完工', width: 280, allowBlank: false, format: 'Y-m-d H:i'},
             ]
         },
         {
@@ -58,8 +59,8 @@ Ext.define("app.view.imms.mfc.workorder.WorkorderDetailForm", {
             layout: "hbox",
             margin: '0 0 3 ',
             items: [
-                { name: "timeStartActual", xtype: "textfield", fieldLabel: '实际开工', width:280 },
-                { name: "timeEndActual", xtype: "textfield", margin: '0 20 0 15',fieldLabel: '实际完工', width:280, },
+                { name: "timeStartActual", xtype: "datetimefield", fieldLabel: '实际开工', width: 280, format: 'Y-m-d H:i',},
+                { name: "timeEndActual", xtype: "datetimefield", margin: '0 20 0 15', fieldLabel: '实际完工', width: 280, format: 'Y-m-d H:i',},
             ]
         },
         {
@@ -72,12 +73,12 @@ Ext.define("app.view.imms.mfc.workorder.WorkorderDetailForm", {
             ]
         }
     ],
-    onRecordLoad: function (config) {
-        if (config.seq == app.ux.data.DataOperationSeq.BEFORE && config.dataMode == app.ux.data.DataMode.INSERT) {
-            config.record.data.timeStartPlan = Ext.Date.format(new Date(), 'Y-m-d');
-            config.record.data.timeEndPlan = Ext.Date.format(new Date(), 'Y-m-d');
-            config.record.data.timeStartActual = Ext.Date.format(new Date(), 'Y-m-d');
-            config.record.data.timeEndActual = Ext.Date.format(new Date(), 'Y-m-d');
-        }
-    }
+    // onRecordLoad: function (config) {
+    //     if (config.seq == app.ux.data.DataOperationSeq.BEFORE && config.dataMode == app.ux.data.DataMode.INSERT) {
+    //         config.record.data.timeStartPlan = Ext.Date.format(new Date(), 'Y-m-d');
+    //         config.record.data.timeEndPlan = Ext.Date.format(new Date(), 'Y-m-d');
+    //         config.record.data.timeStartActual = Ext.Date.format(new Date(), 'Y-m-d');
+    //         config.record.data.timeEndActual = Ext.Date.format(new Date(), 'Y-m-d');
+    //     }
+    // }
 });

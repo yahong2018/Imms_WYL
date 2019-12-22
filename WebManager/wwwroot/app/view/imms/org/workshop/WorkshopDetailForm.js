@@ -25,6 +25,11 @@ Ext.define("app.view.imms.org.workshop.WorkshopDetailForm", {
             maxLength: 50,
             enforceMaxLength: true,
             width: 380
+        },{
+            name:"workshiftCode",
+            xtype:"textfield",
+            fieldLabel:"生产班次",
+            allowBlank:false
         }
     ]
 });

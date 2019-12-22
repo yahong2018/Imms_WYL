@@ -145,6 +145,7 @@ namespace Imms.Mes.Services.Kanban.Line
                 item.qty_bad = summmaryList.Where(x => x.SpanId == span.RecordId).Select(x => x.QtyBad).Sum();
                 item.time_begin = span.TimeBegin;
                 item.time_end = span.TimeEnd;
+                item.delay_time = span.DelayTime;
             }
         }
 

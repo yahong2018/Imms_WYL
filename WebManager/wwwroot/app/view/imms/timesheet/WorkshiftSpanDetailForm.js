@@ -66,6 +66,11 @@ Ext.define("app.view.imms.timesheet.WorkshiftSpanDetailForm", {
                     margin: '8 20 5 5', flex: 0.8, readOnly: true
                 }
             ]
+        }, {
+            xtype: "textfield",
+            name: "delayTime",
+            fieldLabel: "红灯延迟时间",
+            allowBlank: false
         }
     ],
     onRecordLoad: function (config) {

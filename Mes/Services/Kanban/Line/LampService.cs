@@ -11,10 +11,9 @@ namespace Imms.Mes.Services.Kanban.Line
     {
         private DataService _DataService = null;
         private DateTime _Yestoday = DateTime.Now;
-        private SortedList<string, DateTime> _FirstTimeList = new SortedList<string, DateTime>();
         private SortedList<string, int> _LampStatusList = new SortedList<string, int>();
         private SortedList<string, DateTime> _LowRateTimeList = new SortedList<string, DateTime>();
-        private SortedList<string,DateTime> _LastLightTimeList=new SortedList<string, DateTime>();
+        private SortedList<string, DateTime> _LastLightTimeList = new SortedList<string, DateTime>();
 
         public LampService(DataService dataService)
         {
@@ -23,7 +22,7 @@ namespace Imms.Mes.Services.Kanban.Line
 
         public override bool Config()
         {
-            base.Config();           
+            base.Config();
 
             this.RefreshTimes();
             return true;
@@ -47,18 +46,11 @@ namespace Imms.Mes.Services.Kanban.Line
         {
             lock (this)
             {
-                this._FirstTimeList.Clear();
                 DateTime currentTime = DateTime.Now;
                 foreach (string lineCode in this._LineSpans.Keys)
                 {
-                    List<WorkshiftSpan> spanList = this._LineSpans[lineCode];
-                    string strTimeBegin = spanList.OrderBy(x => x.Seq).Select(x => x.TimeBegin).First();
-                    DateTime timeBegin = DateTime.Parse(this._Yestoday.Date.ToString("yyyy/MM/dd") + " " + strTimeBegin).AddHours(1);  // 上班的第一个小时
-
-                    this._FirstTimeList.Add(lineCode, timeBegin);
                     this._LowRateTimeList.Add(lineCode, new DateTime(9999, 12, 31));
-
-                    this._LastLightTimeList.Add(lineCode,currentTime);
+                    this._LastLightTimeList.Add(lineCode, currentTime);
                 }
             }
         }
@@ -104,15 +96,6 @@ namespace Imms.Mes.Services.Kanban.Line
                 this.DoLight(line, LAMP_GREEN);
                 return;
             }
-
-            DateTime firstTime = this._FirstTimeList[lineNo];
-
-            DateTime currentTime = DateTime.Now;
-            int targetLamp = this._LampStatusList[lineNo];
-            if (currentTime < firstTime)   //如果是还没有上班或者上班的第一个小时内，亮绿灯
-            {
-                targetLamp = LAMP_GREEN;
-            }
             if (lineData.is_break)    //中途休息时间不更改等的状态
             {
                 return;
@@ -122,7 +105,16 @@ namespace Imms.Mes.Services.Kanban.Line
             {
                 return;
             }
-            Detail currentItem = lineData.line_detail_data.Where(x => x.is_current_item).Single();
+
+            DateTime currentTime = DateTime.Now;
+            Detail currentItem = lineData.line_detail_data.Where(x => x.is_current_item).Single();            
+            DateTime firstTime = DateTime.Parse(currentTime.Date.ToString("yyyy/MM/dd") + " " + currentItem.time_begin).AddMinutes(currentItem.delay_time);
+
+            int targetLamp = this._LampStatusList[lineNo];
+            if (currentTime <= firstTime)   //如果是还没有上班或者上班的第一个小时内，亮绿灯
+            {
+                targetLamp = LAMP_GREEN;
+            }
             if (currentItem.qty_good >= currentItem.qty_plan)   //生产率达标，亮绿灯
             {
                 targetLamp = LAMP_GREEN;
@@ -130,24 +122,23 @@ namespace Imms.Mes.Services.Kanban.Line
             }
             else
             {
-                DateTime lastCheckTime = this._LowRateTimeList[lineNo];
-                if (currentTime < lastCheckTime)
+                DateTime lastLowCheckTime = this._LowRateTimeList[lineNo];
+                if (currentTime < lastLowCheckTime)
                 {
                     this._LowRateTimeList[lineNo] = currentTime;
-                    lastCheckTime = this._LowRateTimeList[lineNo];
+                    lastLowCheckTime = this._LowRateTimeList[lineNo];
                 }
 
-                TimeSpan span = currentTime.Subtract(lastCheckTime);
-               // if (span.TotalMinutes >= 1)   //连续15分钟检查亮绿灯
+                TimeSpan span = currentTime.Subtract(lastLowCheckTime);
+                // if (span.TotalMinutes >= 1)   //连续15分钟检查亮红灯
                 {
                     targetLamp = LAMP_RED;
                 }
             }
 
-            if (this._LampStatusList[lineNo] != targetLamp || currentTime.Subtract(this._LastLightTimeList[lineNo]).TotalMinutes>=3)
+            if (this._LampStatusList[lineNo] != targetLamp || currentTime.Subtract(this._LastLightTimeList[lineNo]).TotalMinutes >= 3)
             {
                 this.DoLight(line, targetLamp);
-
                 this._LastLightTimeList[lineNo] = currentTime;
             }
         }

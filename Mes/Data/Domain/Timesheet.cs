@@ -21,7 +21,7 @@ namespace Imms.Mes.Data.Domain
         public string TimeBegin { get; set; }
         public string TimeEnd { get; set; }
         public int IsBreak { get; set; }
-        public int isShowOnKanban { get; set; }
+        public int DelayTime { get; set; }
 
         public virtual Workshift Shift { get; set; }
     }
@@ -55,7 +55,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.TimeBegin).HasColumnName("time_begin");
             builder.Property(e => e.TimeEnd).HasColumnName("time_end");
             builder.Property(e => e.IsBreak).HasColumnName("is_break");
-            builder.Property(e=>e.isShowOnKanban).HasColumnName("is_show_on_kanban");
+            builder.Property(e => e.DelayTime).HasColumnName("delay_time");
 
             builder.HasOne(e => e.Shift).WithMany(e => e.Spans).HasForeignKey(e => e.WorkshiftId).HasConstraintName("workshift_id");
         }

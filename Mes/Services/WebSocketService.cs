@@ -20,7 +20,6 @@ namespace Imms.Mes.Services
             return app.Map(path, (_app) => _app.UseMiddleware<WebSocketManagerMiddleware>(handler));
         }
 
-
         public static IServiceCollection AddWebSocketManager(this IServiceCollection services)
         {
             services.AddTransient<WebSocketConnectionManager>();
@@ -84,19 +83,14 @@ namespace Imms.Mes.Services
             try
             {
                 WebSocket socket;
-
                 _sockets.TryRemove(id, out socket);
-
-
                 await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
-
-
             }
             catch (Exception e)
             {
-
+                GlobalConstants.DefaultLogger.Error(e.Message);
+                GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
-
         }
 
         public async Task CloseSocket(WebSocket socket)
@@ -143,7 +137,6 @@ namespace Imms.Mes.Services
                     await _webSocketHandler.OnDisconnected(socket);
                     return;
                 }
-
             });
         }
 
@@ -152,17 +145,16 @@ namespace Imms.Mes.Services
             try
             {
                 var buffer = new byte[1024 * 4];
-
                 while (socket.State == WebSocketState.Open)
                 {
-                    var result = await socket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer),
-                                                           cancellationToken: CancellationToken.None);
-
+                    var result = await socket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer), cancellationToken: CancellationToken.None);
                     handleMessage(result, buffer);
                 }
             }
             catch (Exception ex)
             {
+                GlobalConstants.DefaultLogger.Error(ex.Message);
+                GlobalConstants.DefaultLogger.Debug(ex.StackTrace);
             }
         }
     }
@@ -191,7 +183,9 @@ namespace Imms.Mes.Services
         public async Task SendMessageAsync(WebSocket socket, string message)
         {
             if (socket.State != WebSocketState.Open)
+            {
                 return;
+            }
             var bytes = Encoding.UTF8.GetBytes(message);
             await socket.SendAsync(buffer: new ArraySegment<byte>(array: bytes, offset: 0, count: bytes.Length), messageType: WebSocketMessageType.Text, endOfMessage: true, cancellationToken: CancellationToken.None);
         }
@@ -202,8 +196,10 @@ namespace Imms.Mes.Services
             {
                 await SendMessageAsync(WebSocketConnectionManager.GetSocketById(socketId), message);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                GlobalConstants.DefaultLogger.Error(e.Message);
+                GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
         }
 
@@ -236,9 +232,11 @@ namespace Imms.Mes.Services
         /// <returns></returns>
         public async Task SendMessageToSome(WebSocket[] webSockets, string message)
         {
-            webSockets.ToList().ForEach(async a => { await SendMessageAsync(a, message); });
+            foreach (WebSocket socket in webSockets)
+            {
+                await SendMessageAsync(socket, message);
+            }
         }
-
         public abstract Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
     }
 }

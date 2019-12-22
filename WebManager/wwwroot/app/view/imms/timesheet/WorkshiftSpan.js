@@ -25,6 +25,7 @@ Ext.define("app.view.imms.timesheet.WorkshiftSpan", {
                 return "1.隐藏";
             }
         },
+        { dataIndex: "delayTime", text: "红灯延迟时间" }
     ],
     constructor: function (config) {
         var configBase = {

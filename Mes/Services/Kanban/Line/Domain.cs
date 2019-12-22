@@ -32,7 +32,7 @@ namespace Imms.Mes.Services.Kanban.Line
         public int qty_good { get; set; }
         public int qty_bad { get; set; }
         public bool is_current_item { get; set; }
-
-        public int seq{get;set;}
+        public int delay_time { get; set; }
+        public int seq { get; set; }
     }
 }

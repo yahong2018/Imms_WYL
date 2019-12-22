@@ -7,7 +7,8 @@ Ext.define("app.view.imms.org.workshop.Workshop", {
 
     columns: [
         { dataIndex: "orgCode", text: "车间编号", width: 120 },
-        { dataIndex: "orgName", text: "车间名称", width: 200 },
+        { dataIndex: "orgName", text: "车间名称", width: 150 },
+        { dataIndex: "workshiftCode", text: "生产班次" }
     ],
     additionToolbarItems: [
         '-',

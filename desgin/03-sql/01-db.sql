@@ -331,7 +331,7 @@ create table mes_workshift_span
     time_begin        varchar(5)      not null,
     time_end          varchar(5)      not null,
     is_break          int             not null,
-    is_show_on_kanban int             not null,
+    delay_time        int             not null  default 0,
 
     primary key(record_id)
 );

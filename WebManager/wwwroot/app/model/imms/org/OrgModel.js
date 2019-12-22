@@ -11,6 +11,9 @@ Ext.define("app.model.imms.org.OrgModel", {
 
 Ext.define("app.model.imms.org.WorkshopModel", {
     extend: 'app.model.imms.org.OrgModel',
+    field: [
+        { name: "workshiftCode", type: "string" }
+    ]
 });
 
 Ext.define("app.model.imms.org.WorklineModel", {

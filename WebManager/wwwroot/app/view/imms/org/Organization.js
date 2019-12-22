@@ -16,7 +16,7 @@ Ext.define("app.view.imms.org.Organization", {
             items: [
                 {
                     region: 'west',
-                    width: 400,
+                    width: 450,
                     xtype: "org_workshop_Workshop"
                 }, {
                     region: 'center',

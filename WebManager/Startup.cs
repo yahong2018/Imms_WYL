@@ -91,7 +91,6 @@ namespace Imms.WebManager
                             }
                         }
                         return Task.CompletedTask;
-
                     }
                 };
             }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
@@ -162,41 +161,29 @@ namespace Imms.WebManager
 
         private void RegisterKanbanServices(IServiceCollection services)
         {
-            // services.AddSignalR();
-
             services.AddSingleton<Imms.Mes.Services.Kanban.Line.DataService, Imms.Mes.Services.Kanban.Line.DataService>();
             services.AddSingleton<Imms.Mes.Services.Kanban.Line.LampService, Imms.Mes.Services.Kanban.Line.LampService>();
-            // services.AddSingleton<Imms.Mes.Services.Kanban.Line.LineKanbanHub, Imms.Mes.Services.Kanban.Line.LineKanbanHub>();
 
-           services.AddWebSocketManager();
+            services.AddWebSocketManager();
         }
 
         private void StartKanban(IApplicationBuilder app)
         {
-            // app.UseSignalR(routes =>
-            // {
-            //     //  routes.MapHub<LineKanbanHub>("/LineKanbanHub/line");
-            //     routes.MapHub<Imms.Mes.Services.Kanban.Line.LineKanbanHub>("/LineKanbanHub/line");
-            // });
-
             Imms.Mes.Services.Kanban.Line.DataService dataService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
-            dataService.Config();
             Imms.Mes.Services.Kanban.Line.LampService lampService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.LampService>();
-            lampService.Config();
 
+            lampService.Config();
+            dataService.Config();
             dataService.Startup();
             lampService.Startup();
-
-            // Imms.Mes.Services.Kanban.Line.LineKanbanHub kanbanHub = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.LineKanbanHub>();
-            // kanbanHub.Start();               
 
             var webSocketOptions = new WebSocketOptions()
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(120),
                 ReceiveBufferSize = 4 * 1024
             };
-           app.UseWebSockets(webSocketOptions);
-           app.MapWebSocketManager("/ws", app.ApplicationServices.GetService<Mes.Services.Kanban.Line.LineKanbanService>());
+            app.UseWebSockets(webSocketOptions);
+            app.MapWebSocketManager("/ws", app.ApplicationServices.GetService<Mes.Services.Kanban.Line.LineKanbanService>());
         }
 
         public static IApplicationBuilder AppBuiloder { get; private set; }

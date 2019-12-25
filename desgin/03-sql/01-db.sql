@@ -227,6 +227,7 @@ create table mes_workorder
     qty_good          int              not null default 0,
     qty_bad           int              not null default 0,   
     uph               int              not null,
+    worker_count      int              not null,
 
     time_start_plan   datetime         not null,
     time_end_plan     datetime         not null,

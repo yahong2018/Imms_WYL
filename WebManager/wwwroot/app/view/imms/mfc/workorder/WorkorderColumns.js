@@ -20,6 +20,7 @@ Ext.define("app.view.imms.mfc.workorder.WorkorderColumns",{
         { dataIndex: "customerNo", text: '客户', width: 150 },
         { dataIndex: "qtyReq", text: '计划数量', width: 80 },
         { dataIndex: "uph", text: 'UPH', width: 80 },
+        { dataIndex: "workerCount", text: '人数', width: 80 },        
         { dataIndex: "timeStartPlan", text: '计划开工', width: 150 },
         { dataIndex: "timeEndPlan", text: '计划完工', width: 150 },
         { dataIndex: "timeStartActual", text: '实际开工', width: 150 },

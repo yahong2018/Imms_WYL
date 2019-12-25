@@ -17,7 +17,7 @@ namespace Imms.Mes.Services.Kanban.Line
         {
             base.Config();
 
-            this._DbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;            
+            this._DbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             this.RefreshActiveWorkorders();
             return true;
         }
@@ -51,25 +51,50 @@ namespace Imms.Mes.Services.Kanban.Line
 
                 foreach (Workline line in this._Worklines)
                 {
-                    Workorder activeWorkorder = this._DbContext.Set<Workorder>().Where(x => x.LineNo == line.LineCode && x.OrderStatus == Workorder.WOKORDER_STATUS_STARTED).FirstOrDefault();
-                    if (activeWorkorder != null)
+                    Workorder activeWorkorder = this._DbContext.Set<Workorder>()
+                             .Where(x => x.LineNo == line.LineCode && x.OrderStatus == Workorder.WOKORDER_STATUS_STARTED)
+                             .FirstOrDefault();
+                    if (activeWorkorder == null)
                     {
-                        this._ActiveWorkOrders.Add(line.LineCode, activeWorkorder);
+                        continue;
+                    }
 
-                        KanbanLineData lineData = new KanbanLineData();
-                        lineData.line_code = line.LineCode;
-                        Summary summary = new Summary();
-                        lineData.line_summary_data = summary;
-                        this._AllLineData.Add(line.LineCode, lineData);
+                    this._ActiveWorkOrders.Add(line.LineCode, activeWorkorder);
+                    KanbanLineData lineData = this.CreateLineData(activeWorkorder);
 
-                        summary.person_qty = this._DbContext.Set<Operator>().Where(x => x.orgCode == line.LineCode).Count();
-                        summary.production_code = activeWorkorder.PartNo;
-                        summary.production_name = activeWorkorder.PartName;
-                        summary.production_order_no = activeWorkorder.OrderNo;
-                        summary.uph = activeWorkorder.UPH;
+                    WorkshiftSpan[] spanList = this._LineSpans[lineData.line_code].OrderBy(x => x.Seq).ToArray();
+                    lineData.line_detail_data = new Detail[spanList.Length];
+                    for (int i = 0; i < spanList.Length; i++)
+                    {
+                        Detail item = new Detail();
+                        item.seq = spanList[i].Seq;
+                        item.time_begin = spanList[i].TimeBegin;
+                        item.time_end = spanList[i].TimeEnd;
+                        item.delay_time = spanList[i].DelayTime;
+                        item.is_break_item = (spanList[i].IsBreak == 1);
+                        item.span_id = spanList[i].RecordId;
+
+                        lineData.line_detail_data[i] = item;
                     }
                 }
             }
+        }
+
+        private KanbanLineData CreateLineData(Workorder activeWorkorder)
+        {
+            KanbanLineData lineData = new KanbanLineData();
+            lineData.line_code = activeWorkorder.LineNo;
+            Summary summary = new Summary();
+            lineData.line_summary_data = summary;
+            this._AllLineData.Add(activeWorkorder.LineNo, lineData);
+
+            summary.person_qty = activeWorkorder.WorkerCount;
+            summary.production_code = activeWorkorder.PartNo;
+            summary.production_name = activeWorkorder.PartName;
+            summary.production_order_no = activeWorkorder.OrderNo;
+            summary.uph = activeWorkorder.UPH;
+
+            return lineData;
         }
 
         private void RefreshAllLineData()
@@ -84,6 +109,7 @@ namespace Imms.Mes.Services.Kanban.Line
         {
             KanbanLineData data = this._AllLineData[lineNo];
             DateTime currentTime = DateTime.Now;
+            data.current_time = currentTime;
             string date = currentTime.ToString("yyyy/MM/dd");
             data.is_break = (this._LineSpans[lineNo].Where(x => x.IsBreak == 0
                                         && DateTime.Parse(date + " " + x.TimeBegin) <= currentTime
@@ -95,58 +121,78 @@ namespace Imms.Mes.Services.Kanban.Line
                 return;
             }
 
+            this.FillSpanItems(data);
+        }
+
+        private void FillSpanItems(KanbanLineData data)
+        {
+            string date = data.current_time.ToString("yyyy/MM/dd");
+            string lineNo = data.line_code;
             int startSeq = 0;
-            WorkshiftSpan breakSpan = this._LineSpans[lineNo].Where(x => x.IsBreak == 1 && DateTime.Parse(date + " " + x.TimeBegin) <= currentTime)
+
+            WorkshiftSpan breakSpan = this._LineSpans[lineNo].Where(x => x.IsBreak == 1 && DateTime.Parse(date + " " + x.TimeBegin) <= data.current_time)
                 .OrderByDescending(x => x.Seq)
                 .FirstOrDefault();
             if (breakSpan != null)
             {
                 startSeq = breakSpan.Seq;
             }
-            WorkshiftSpan[] spanList = this._LineSpans[lineNo].Where(x => x.Seq > startSeq).OrderBy(x => x.Seq).Take(this.MAX_ITEM_COUNT).ToArray();
-            string firstBeginTime = spanList.OrderBy(x => x.Seq).Select(x => x.TimeBegin).First();
+
+            List<LineProductSummaryDateSpan> summmaryList = this.GetLineProductSummaryDateSpan(lineNo, data.line_summary_data.production_order_no);
+            WorkshiftSpan[] currentSpanList = this._LineSpans[lineNo].Where(x => x.Seq > startSeq).OrderBy(x => x.Seq).Take(this.MAX_ITEM_COUNT).ToArray();
+            string firstBeginTime = currentSpanList.OrderBy(x => x.Seq).Select(x => x.TimeBegin).First();
             DateTime firstTime = DateTime.Parse(date + " " + firstBeginTime);
 
-            data.line_detail_data = new Detail[this.MAX_ITEM_COUNT];
-            List<LineProductSummaryDateSpan> summmaryList = this.GetLineProductSummaryDateSpan(lineNo, data.line_summary_data.production_order_no);
-            for (int i = 0; i < this.MAX_ITEM_COUNT; i++)
+            List<WorkshiftSpan> allSpanList = this._LineSpans[lineNo];
+            foreach (WorkshiftSpan span in allSpanList)
             {
-                Detail item = new Detail();
-                WorkshiftSpan span = spanList[i];
-                DateTime timeStart = DateTime.Parse(date + " " + span.TimeBegin);
-                DateTime timeEnd = DateTime.Parse(date + " " + span.TimeEnd);
-
-                data.line_detail_data[i] = item;
-                item.seq = span.Seq;
-                int secconds = (int)currentTime.Subtract(timeStart).TotalSeconds;
-                if (currentTime >= timeStart && currentTime < timeEnd)
+                Detail detailItem = data.line_detail_data.Where(x => x.span_id == span.RecordId).Single();
+                this.FillOneItem(data, date, firstTime, summmaryList, detailItem, span);
+                if (currentSpanList.Where(x => x.RecordId == detailItem.span_id).Count() > 0)
                 {
-                    item.is_current_item = true;
-                    item.qty_plan = (int)(secconds * (data.line_summary_data.uph / 3600F));
+                    detailItem.shown_in_detail_table = true;
                 }
                 else
                 {
-                    item.is_current_item = false;
-                    if (currentTime < firstTime)
-                    {
-                        item.is_current_item = true;
-                    }
-
-                    if (currentTime < timeStart)
-                    {
-                        item.qty_plan = 0;
-                    }
-                    else
-                    {
-                        item.qty_plan = data.line_summary_data.uph;
-                    }
+                    detailItem.shown_in_detail_table = false;
                 }
-                item.qty_good = summmaryList.Where(x => x.SpanId == span.RecordId).Select(x => x.QtyGood).Sum();
-                item.qty_bad = summmaryList.Where(x => x.SpanId == span.RecordId).Select(x => x.QtyBad).Sum();
-                item.time_begin = span.TimeBegin;
-                item.time_end = span.TimeEnd;
-                item.delay_time = span.DelayTime;
             }
+        }
+
+        private void FillOneItem(KanbanLineData data, string date, DateTime firstTime, List<LineProductSummaryDateSpan> summmaryList, Detail item, WorkshiftSpan span)
+        {
+            DateTime currentTime = data.current_time;
+            DateTime timeStart = DateTime.Parse(date + " " + span.TimeBegin);
+            DateTime timeEnd = DateTime.Parse(date + " " + span.TimeEnd);
+            item.seq = span.Seq;
+            int secconds = (int)currentTime.Subtract(timeStart).TotalSeconds;
+            if (currentTime >= timeStart && currentTime < timeEnd)
+            {
+                item.is_current_item = true;
+                item.qty_plan = (int)(secconds * (data.line_summary_data.uph / 3600F));
+            }
+            else
+            {
+                item.is_current_item = false;
+                if (currentTime < firstTime)
+                {
+                    item.is_current_item = true;
+                }
+
+                if (currentTime < timeStart)
+                {
+                    item.qty_plan = 0;
+                }
+                else
+                {
+                    item.qty_plan = data.line_summary_data.uph;
+                }
+            }
+            item.qty_good = summmaryList.Where(x => x.SpanId == span.RecordId).Select(x => x.QtyGood).Sum();
+            item.qty_bad = summmaryList.Where(x => x.SpanId == span.RecordId).Select(x => x.QtyBad).Sum();
+            item.time_begin = span.TimeBegin;
+            item.time_end = span.TimeEnd;
+            item.delay_time = span.DelayTime;
         }
 
         private List<LineProductSummaryDateSpan> GetLineProductSummaryDateSpan(string lineNo, string workorderNo)

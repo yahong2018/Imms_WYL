@@ -10,10 +10,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Imms.Mes.Data
 {
     public class WorkorderLogic : SimpleCRUDLogic<Workorder>
-    {        
+    {
         private IApplicationBuilder _App;
-        public WorkorderLogic(IApplicationBuilder app){
+        public WorkorderLogic(IApplicationBuilder app)
+        {
             this._App = app;
+        }
+
+        protected override void AfterUpdate(Workorder item, DbContext dbContext)
+        {
+            Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
+            dataService.RefreshActiveWorkorders();
         }
 
         public void StartWorkder(Workorder workorder)
@@ -24,8 +31,8 @@ namespace Imms.Mes.Data
             }
             this.DoStart(workorder);
 
-            Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();            
-            dataService.RefreshActiveWorkorders();            
+            Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
+            dataService.RefreshActiveWorkorders();
         }
 
         private void DoStart(Workorder workorder)

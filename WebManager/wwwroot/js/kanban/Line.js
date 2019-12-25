@@ -8,7 +8,7 @@ var option = {
         color: 'white'
     },
     title: {
-        text: '生产效率 Hourly OTD %',
+        text: '生产达成率 Hourly OTD %',
         left: 'center',
         textStyle: {
             color: 'red',
@@ -30,7 +30,7 @@ var option = {
         }
     },
     grid: {
-        right: '1%',
+        right: '15px',
         bottom: '8%',
     },
     xAxis: {
@@ -47,8 +47,8 @@ var option = {
     yAxis: {
         type: 'value',
         min: 0,
-        max: 120,
-        interval: 10,
+        max: 140,
+        interval: 20,
     },
     series: [
         {
@@ -102,19 +102,13 @@ function dateFtt(fmt, date) { //author: meizz
     return fmt;
 }
 
-setInterval(function () {
-    var current_time = document.getElementById('current_time');
-    var now = new Date();
-    var text = dateFtt("yyyy年MM月dd日 hh:mm:ss", now)
-    current_time.innerText = text;
-}, 1000);
-
 var total_plan, total_actual, total_good, total_bad, max_qty;
 total_plan = total_actual = total_good = total_bad = max_qty = 0;
 
 var server_data = {
     line_code: "A301-1",
     is_break: false,
+    current_time: new Date(),
 
     line_summary_data: {
         production_code: "AL666-ACC-02R",
@@ -128,9 +122,32 @@ var server_data = {
         { time_begin: '09:15', time_end: '10:15', qty_plan: 0, qty_good: 0, qty_bad: 0, is_current_item: false },
         { time_begin: '10:15', time_end: '11:15', qty_plan: 0, qty_good: 0, qty_bad: 0, is_current_item: false },
         { time_begin: '11:15', time_end: '12:15', qty_plan: 0, qty_good: 0, qty_bad: 0, is_current_item: false },
+    ],
+    line_chart_data: [
+        { time: "08:15", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "09:15", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "10:15", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "11:15", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "12:15", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "13:15", qty_good_percent: null, qty_bad_percent: null },
+        { time: "14:15", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "15:15", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "16:15", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "17:15", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "18:00", qty_good_percent: null, qty_bad_percent: null },
+        { time: "19:00", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "20:00", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "21:00", qty_good_percent: 0, qty_bad_percent: 0 },
+        { time: "22:00", qty_good_percent: 0, qty_bad_percent: 0 },
     ]
 };
 
+setInterval(function () {
+    var current_time = document.getElementById('current_time');
+    var now = new Date(server_data.current_time);
+    var text = dateFtt("yyyy年MM月dd日 hh:mm:ss", now)
+    current_time.innerText = text;
+}, 1000);
 
 function fill_line_code() {
     document.getElementById("line_id").innerText = "Cell Line:" + server_data.line_code;
@@ -142,10 +159,9 @@ function fill_line_summary() {
 
     var summary_data = server_data.line_summary_data || {};
     tr.cells[1].innerText = summary_data.production_code;
-    tr.cells[3].innerText = summary_data.production_name;
-    tr.cells[5].innerText = summary_data.production_order_no;
-    tr.cells[7].innerText = summary_data.uph + "(PCS)";
-    tr.cells[9].innerText = summary_data.person_qty + "(人)";
+    tr.cells[3].innerText = summary_data.production_order_no;
+    tr.cells[5].innerText = summary_data.uph + "(PCS)";
+    tr.cells[7].innerText = summary_data.person_qty + "(人)";
 }
 
 function fill_detail_data(config) {
@@ -159,84 +175,127 @@ function fill_detail_data(config) {
         row.cells[3].innerText = data.qty_bad;
         row.cells[4].innerText = data.sub_total;
         row.cells[5].innerText = data.percentOfPass;
-        row.cells[6].innerText = data.percentOfProducton;
+        row.cells[6].innerText = data.percentOfProduction;
     };
     total_plan = total_actual = total_good = total_bad = max_qty = 0;
     config.good_items.push(0);
     config.bad_items.push(0);
+
+    var percentOfPass = 0;
+    var percentOfProduction = 0;
+    var percentOfBad = 0;
+    var sub_total = 0;
+
     var current_seq = -1;
-    for (var i = 0; i < detail_items.length; i++) {
+    for (var i = 0, j = 0; i < detail_items.length; i++) {
+        var row = null;
         var item = detail_items[i];
-        var row = table.rows[i + 1];
-        var sub_total = item.qty_good + item.qty_bad;
-        var percentOfPass = 0;
+        if (item.is_break_item) {
+            continue;
+        }
+
+        if (item.shown_in_detail_table) {
+            row = table.rows[j + 1];
+            j += 1;
+        }
+        percentOfPass = percentOfProduction = percentOfBad = sub_total = 0;
+
+        sub_total = item.qty_good + item.qty_bad;
         if (sub_total != 0) {
             percentOfPass = (item.qty_good / sub_total) * 100;
         }
-        var percentOfProducton = 0;
         if (item.qty_plan != 0) {
-            percentOfProducton = (sub_total / item.qty_plan) * 100;
+            percentOfProduction = (item.qty_good / item.qty_plan) * 100;
         }
-        var percentOfBad = 100 - percentOfPass;
+        percentOfBad = 100 - percentOfPass;
         if (item.qty_bad == 0) {
             percentOfBad = 0;
         }
 
-        config.hours.push(item.time_begin);
+        if (i > 0 && detail_items[i - 1].is_break_item) {
+            config.hours.push(detail_items[i - 1].time_begin);
+        } else {
+            config.hours.push(item.time_begin);
+        }
         if (current_seq == -1) {
-            config.good_items.push(percentOfProducton.toFixed(1));
+            config.good_items.push(percentOfProduction.toFixed(1));
             config.bad_items.push(percentOfBad.toFixed(1));
 
-            fill_row(row, {
-                period: item.time_begin + "~" + item.time_end,
-                qty_plan: item.qty_plan,
-                qty_good: item.qty_good,
-                qty_bad: item.qty_bad,
-                sub_total: sub_total,
-                percentOfPass: percentOfPass.toFixed(1) + "%",
-                percentOfProducton: percentOfProducton.toFixed(1) + "%"
-            });
+            if (item.shown_in_detail_table) {
+                fill_row(row, {
+                    period: item.time_begin + "~" + item.time_end,
+                    qty_plan: item.qty_plan,
+                    qty_good: item.qty_good,
+                    qty_bad: item.qty_bad,
+                    sub_total: sub_total,
+                    percentOfPass: percentOfPass.toFixed(1) + "%",
+                    percentOfProduction: percentOfProduction.toFixed(1) + "%"
+                });
+                if (percentOfProduction < 98) {
+                    row.cells[6].style.color = 'red';
+                } else {
+                    row.cells[6].style.color = 'white';
+                }
 
-            if (percentOfProducton < 98) {
-                row.cells[6].style.color = 'red';
-            } else {
-                row.cells[6].style.color = 'white';
+                if (percentOfPass < 97) {
+                    row.cells[5].style.color = 'red';
+                } else {
+                    row.cells[5].style.color = 'white';
+                }
             }
         } else {
-            row.cells[6].style.color = 'white';
-
-            fill_row(row, {
-                period: item.time_begin + "~" + item.time_end,
-                qty_plan: "-",
-                qty_good: "-",
-                qty_bad: "-",
-                sub_total: "-",
-                percentOfPass: "-",
-                percentOfProducton: "-"
-            });
+            if (row) {
+                row.cells[6].style.color = 'white';
+                row.cells[5].style.color = 'white';
+                fill_row(row, {
+                    period: item.time_begin + "~" + item.time_end,
+                    qty_plan: "-",
+                    qty_good: "-",
+                    qty_bad: "-",
+                    sub_total: "-",
+                    percentOfPass: "-",
+                    percentOfProduction: "-"
+                });
+            }
         }
 
         total_good += item.qty_good;
         total_bad += item.qty_bad;
         total_plan += item.qty_plan;
         total_actual += sub_total;
-
         if (item.is_current_item == true) {
             current_seq = item.seq;
         }
     }
     config.hours.push(detail_items[detail_items.length - 1].time_end);
-
     var row_summary = table.rows[table.rows.length - 1];
+    if (total_actual != 0) {
+        percentOfPass = (total_good / total_actual) * 100;
+    }
+    if (total_plan != 0) {
+        percentOfProduction = (total_good / total_plan) * 100;
+    }
     fill_row(row_summary, {
         period: '累计数',
         qty_plan: total_plan + "(件)",
         qty_good: total_good + "(件)",
         qty_bad: total_bad + "(件)",
         sub_total: total_actual + "(件)",
-        percentOfPass: (total_actual == 0 ? 0 : (((total_good / total_actual) * 100).toFixed(1))) + "%",
-        percentOfProducton: (total_plan == 0 ? 0 : (((total_actual / total_plan) * 100).toFixed(1))) + "%"
+        percentOfPass: percentOfPass.toFixed(1) + "%",
+        percentOfProduction: percentOfProduction.toFixed(1) + "%"
     });
+
+    if (percentOfProduction < 98) {
+        row_summary.cells[6].style.color = 'red';
+    } else {
+        row_summary.cells[6].style.color = 'white';
+    }
+
+    if (percentOfPass < 97) {
+        row_summary.cells[5].style.color = 'red';
+    } else {
+        row_summary.cells[5].style.color = 'white';
+    }
 }
 
 function fill_detail_summary() {
@@ -256,12 +315,33 @@ function fill_detail_summary() {
     row_current.cells[1].innerText = item.qty_plan;
 
     var qty_actual = item.qty_good + item.qty_bad;
-    row_current.cells[2].innerText = qty_actual;
-    row_current.cells[3].innerText = (((item.qty_plan == 0) ? 0 : qty_actual / item.qty_plan) * 100).toFixed(1) + "%";
+    row_current.cells[2].innerText = item.qty_good;
+    var percentOfProduction = 0;
+    if (item.qty_plan != 0) {
+        percentOfProduction = (item.qty_good / item.qty_plan) * 100;
+    }
+    row_current.cells[3].innerText = percentOfProduction.toFixed(1) + "%";
     row_current.cells[4].innerText = item.qty_bad;
-    row_current.cells[5].innerText = (((qty_actual == 0) ? 0 : item.qty_bad / qty_actual) * 100).toFixed(1) + "%";
 
-    var now = new Date();
+    var percentOfFail = 0;
+    percentOfFail = percentOfFail.toFixed(1);
+    if (qty_actual > 0) {
+        percentOfFail = ((item.qty_bad / qty_actual) * 100).toFixed(1);
+    }
+    row_current.cells[5].innerText = percentOfFail + "%";
+    if (percentOfFail >= 3) {
+        row_current.cells[5].style.color = 'red';
+    } else {
+        row_current.cells[5].style.color = 'white';
+    }
+
+    if (percentOfProduction < 98) {
+        row_current.cells[3].style.color = 'red';
+    } else {
+        row_current.cells[3].style.color = 'white';
+    }
+
+    var now = new Date(server_data.current_time);
     var month = now.toDateString().split(" ")[1];
     var day = now.getDate();
     var year = now.getFullYear();
@@ -270,13 +350,35 @@ function fill_detail_summary() {
     var row_total = table.rows[2];
     row_total.cells[0].innerHTML = text;
     row_total.cells[1].innerText = total_plan;
-    row_total.cells[2].innerText = total_actual;
-    row_total.cells[3].innerText = (((total_plan == 0) ? 0 : (total_actual / total_plan)) * 100).toFixed(1) + "%";
+    row_total.cells[2].innerText = total_good;
+    percentOfProduction = 0;
+    if (total_plan != 0) {
+        percentOfProduction = (total_good / total_plan) * 100;
+    }
+    row_total.cells[3].innerText = percentOfProduction.toFixed(1) + "%";
+
+    percentOfFail = 0;
+    if (total_actual > 0) {
+        percentOfFail = (total_bad / total_actual) * 100;
+    }
+
     row_total.cells[4].innerText = total_bad;
-    row_total.cells[5].innerText = (((total_actual == 0) ? 0 : (total_bad / total_actual)) * 100).toFixed(1) + "%";
+    row_total.cells[5].innerText = percentOfFail.toFixed(1) + "%";
+
+    if (percentOfFail >= 3) {
+        row_total.cells[5].style.color = 'red';
+    } else {
+        row_total.cells[5].style.color = 'white';
+    }
+
+    if (percentOfProduction < 98) {
+        row_total.cells[3].style.color = 'red';
+    } else {
+        row_total.cells[3].style.color = 'white';
+    }
 }
 
-function on_server_data() {   
+function on_server_data() {
     if (server_data.is_break) {
         return;  //休息时间不更新数据
     }
@@ -325,7 +427,7 @@ var WebSocketProxy = {
             var port = document.location.port ? (":" + document.location.port) : "";
             var url = scheme + "://" + document.location.hostname + port + "/ws";
             var websocket = new WebSocket(url);
-            
+
             this.websocket = websocket;
             var me = this;
             websocket.onopen = function () {
@@ -345,7 +447,8 @@ var WebSocketProxy = {
                 try {
                     server_data = JSON.parse(evt.data);
                     on_server_data();
-                } catch(e){
+                } catch (e) {
+                    console.error(e);
                 }
             };
         } catch (e) {

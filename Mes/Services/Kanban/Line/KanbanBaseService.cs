@@ -19,7 +19,7 @@ namespace Imms.Mes.Services.Kanban.Line
             this.ThreadIntervals = 1000 * 1;
             this._DbContext = GlobalConstants.DbContextFactory.GetContext();
             this.RefreshOrgAndSpanData();
-           
+
             return true;
         }
 
@@ -35,7 +35,10 @@ namespace Imms.Mes.Services.Kanban.Line
                     long workshiftId = this._DbContext.Set<Workshift>().Where(x => x.ShiftCode == workshop.WorkshiftCode).Single().RecordId;
                     foreach (Workline line in this._Worklines)
                     {
-                        this._LineSpans.Add(line.LineCode, this._DbContext.Set<WorkshiftSpan>().Where(x => x.WorkshiftId == workshiftId).ToList());
+                        this._LineSpans.Add(line.LineCode, this._DbContext.Set<WorkshiftSpan>()
+                                     .Where(x => x.WorkshiftId == workshiftId)
+                                     .OrderBy(x => x.Seq)
+                                     .ToList())                                     ;
                     }
                 }
             }

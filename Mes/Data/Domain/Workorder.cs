@@ -18,6 +18,7 @@ namespace Imms.Mes.Data.Domain
         public int QtyGood { get; set; }
         public int QtyBad { get; set; }
         public int UPH { get; set; }
+        public int WorkerCount { get; set; }
 
         public DateTime TimeStartPlan { get; set; }
         public DateTime TimeEndPlan { get; set; }
@@ -97,7 +98,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.LineNo).HasColumnName("line_no");
             builder.Property(e => e.PartNo).HasColumnName("part_no");
             builder.Property(e => e.PartName).HasColumnName("part_name");
-            
+
             builder.Property(e => e.QtyReq).HasColumnName("qty_req");
             builder.Property(e => e.QtyGood).HasColumnName("qty_good");
             builder.Property(e => e.QtyBad).HasColumnName("qty_bad");
@@ -108,6 +109,7 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.TimeEndActual).HasColumnName("time_end_actual");
 
             builder.Property(e => e.UPH).HasColumnName("uph");
+            builder.Property(e => e.WorkerCount).HasColumnName("worker_count");
         }
     }
 

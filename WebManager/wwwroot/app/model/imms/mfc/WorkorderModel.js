@@ -10,6 +10,7 @@ Ext.define("app.model.imms.mfc.WorkorderModel", {
         { name: "partName", type: "string" },
         { name: "qtyReq", type: "int" },
         { name: "uph", type: "int" },
+        { name: "workerCount", type: "int" },
         { name: "qtyGood", type: "int" },
         { name: "qtyBad", type: "int" },
         { name: "timeStartPlan", type: "zhxhDate", dateFormat: "Y-m-d H:i" },

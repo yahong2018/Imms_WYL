@@ -30,7 +30,7 @@ begin
       and w.gid = @GID
       and w.did = @DID )>1 begin
 		set @RespData = '2|1|4'; 
-        set @RespData = @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+        set @RespData = @RespData + '|210|128|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
 		set @RespData = @RespData + '|1|组号:' + cast(@GID as varchar(10)) + ',机号:' + cast(@DID as varchar(10)) +'|0';
 		set @RespData = @RespData + '|2|工位重复注册|0';
 		set @RespData = @RespData + '|3|请联系管理员|0';
@@ -44,7 +44,7 @@ begin
         from mes_org where gid = @GID and did = @DID;
     if(@WorkstationCode = '')begin
 		set @RespData ='2|1|4';
-		set @RespData = @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+		set @RespData = @RespData + '|210|128|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
         set @RespData = @RespData + '|1|组号:' + cast(@GID as varchar(10)) + ',机号:' + cast(@DID as varchar(10)) +'|0';
 		set @RespData = @RespData + '|2|工位没有注册.|0';
         set @RespData = @RespData + '|3|请联系管理员|0';
@@ -55,7 +55,7 @@ begin
     if(@OrgType='ORG_WORK_LINE') begin
         if (not @ReqData in('1','3')) begin
             set @RespData ='2|1|3';
-            set @RespData = @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+            set @RespData = @RespData + '|210|128|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
             set @RespData = @RespData + '|1|红灯按1|0';
             set @RespData = @RespData + '|2|绿灯按3.|0';                  
         end else begin
@@ -63,7 +63,7 @@ begin
             exec MES_Light @GID,@DID,@Lamp;
 
             set @RespData ='2|1|3';
-            set @RespData = @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+            set @RespData = @RespData + '|210|128|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
             set @RespData = @RespData + '|1|已处理，|0';
             set @RespData = @RespData + '|2|请查看灯|0';             
         end;
@@ -75,7 +75,7 @@ begin
     select top 1 @WorkorderNo = workorder_no,@PartNo = part_no  from mes_active_workorder A   where A.line_no = @LineNo;
     if @WorkorderNo = ''  begin
         set @RespData='2|1|2';
-        set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+        set @RespData= @RespData + '|210|128|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
         set @RespData= @RespData + '|1|还没有启用工单.|0';         
 
         return;
@@ -94,7 +94,7 @@ begin
 
     if(@SpanId = -1)  begin
         set @RespData='2|1|3';
-        set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+        set @RespData= @RespData + '|210|128|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
         set @RespData= @RespData + '|1|休息时间段，|0'; 
 		set @RespData= @RespData + '|2|不可计数.|0'; 
 
@@ -110,7 +110,7 @@ begin
         if (@ReqDataType = 2) and (not @ReqData in('11','12')) 
         begin
             set @RespData='2|1|4';
-            set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+            set @RespData= @RespData + '|210|128|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
             set @RespData= @RespData + '|1|操作错误:|0';
             set @RespData= @RespData + '|2|报不良按[确定]键.|0';
             set @RespData= @RespData + '|3|清零按[取消]键.|0';
@@ -128,7 +128,7 @@ begin
 		    and workorder_no=@WorkorderNo;
 
         set @RespData='2|1|2';
-        set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+        set @RespData= @RespData + '|210|128|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
         set @RespData= @RespData + '|1|统计数据已清零|0';     
 
         return;
@@ -203,7 +203,7 @@ begin
     commit tran; 
 	
 	set @RespData='2|1|5';
-	set @RespData= @RespData + '|210|0|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
+	set @RespData= @RespData + '|210|128|128|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|3|50';
 	set @RespData= @RespData + '|1|已处理，请继续|0';
     set @RespData= @RespData + '|2|'+@WorkstationName+'|0'; 
 	set @RespData= @RespData + '|3|良品:'+cast(@QtyGood as varchar)+'|0'; 

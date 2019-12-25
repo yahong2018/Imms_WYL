@@ -8,6 +8,8 @@ namespace Imms.Mes.Services.Kanban.Line
         public int plan_qty { get; set; }
         public bool is_break { get; set; }
 
+        public DateTime current_time { get; set; }
+
         public DateTime time_start_plan { get; set; }
         public DateTime time_end_plan { get; set; }
 
@@ -32,7 +34,10 @@ namespace Imms.Mes.Services.Kanban.Line
         public int qty_good { get; set; }
         public int qty_bad { get; set; }
         public bool is_current_item { get; set; }
+        public bool is_break_item { get; set; }
+        public bool shown_in_detail_table { get; set; }
         public int delay_time { get; set; }
         public int seq { get; set; }
+        public long span_id { get; set; }
     }
 }

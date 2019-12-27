@@ -27,4 +27,6 @@ A301-2的地址
     192.168.71.246
                 
 
+–ignore-certificate-errors --allow-running-insecure-content --test-type                
+
 

@@ -21,17 +21,32 @@ namespace Imms.Mes.Services.Kanban.Line
         {
             string socketId = WebSocketConnectionManager.GetId(socket);
             string lineNo = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
-            GlobalConstants.DefaultLogger.Info(lineNo);
-            if (_KanbanList.ContainsKey(socketId))
+            GlobalConstants.DefaultLogger.Info(lineNo+"已连接...");
+
+            KanbanClient kanban;
+            lock (this)
             {
-                return Task.Run(() => GlobalConstants.DefaultLogger.Info("空闲处理..."));
+                if (_KanbanList.ContainsKey(socketId))
+                {
+                    kanban = _KanbanList[socketId];
+                    if (kanban.Terminated)
+                    {
+                        kanban.Terminated = false;
+                        kanban.Start();
+                    }
+                    return Task.Run(() => GlobalConstants.DefaultLogger.Info("空闲处理..."));
+                }
             }
 
-            KanbanClient kanban = new KanbanClient();
+            kanban = new KanbanClient();
             kanban.Service = this;
             kanban.LineNo = lineNo;
             kanban.Socket = socket;
-            _KanbanList.Add(socketId, kanban);
+            lock (this)
+            {
+                _KanbanList.Add(socketId, kanban);
+            }
+
             return Task.Run(() =>
             {
                 kanban.Start();
@@ -46,11 +61,14 @@ namespace Imms.Mes.Services.Kanban.Line
         public override async Task OnDisconnected(WebSocket socket)
         {
             string socketId = WebSocketConnectionManager.GetId(socket);
-            if (_KanbanList.ContainsKey(socketId))
+            lock (this)
             {
-                KanbanClient kanban = _KanbanList[socketId];
-                kanban.Terminated = true;
-                _KanbanList.Remove(socketId);
+                if (_KanbanList.ContainsKey(socketId))
+                {
+                    KanbanClient kanban = _KanbanList[socketId];
+                    kanban.Terminated = true;
+                    _KanbanList.Remove(socketId);
+                }
             }
 
             await base.OnDisconnected(socket);

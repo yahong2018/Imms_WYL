@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Transactions;
 using Imms.Data;
 using Imms.Mes.Data.Domain;
@@ -20,7 +21,7 @@ namespace Imms.Mes.Data
         protected override void AfterUpdate(Workorder item, DbContext dbContext)
         {
             Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
-            dataService.RefreshActiveWorkorders();
+            Task.Run(() => dataService.RefreshActiveWorkorders());
         }
 
         public void StartWorkder(Workorder workorder)
@@ -32,7 +33,7 @@ namespace Imms.Mes.Data
             this.DoStart(workorder);
 
             Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
-            dataService.RefreshActiveWorkorders();
+            Task.Run(() => dataService.RefreshActiveWorkorders());
         }
 
         private void DoStart(Workorder workorder)

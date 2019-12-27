@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Imms.Data;
 using Imms.Mes.Data.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,11 +13,14 @@ namespace Imms.Mes.Services.Kanban.Line
         private SortedList<string, Workorder> _ActiveWorkOrders = new SortedList<string, Workorder>();
 
         private int MAX_ITEM_COUNT = 4;
+        private DateTime _OldTime = DateTime.Now;
+        private QueryTrackingBehavior _OldBefahavior;
 
         public override bool Config()
         {
             base.Config();
 
+            this._OldBefahavior = this._DbContext.ChangeTracker.QueryTrackingBehavior;
             this._DbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             this.RefreshActiveWorkorders();
             return true;
@@ -27,6 +31,32 @@ namespace Imms.Mes.Services.Kanban.Line
             lock (this)
             {
                 this.RefreshAllLineData();
+
+                if (DateTime.Now.Day != this._OldTime.Day)
+                {
+                    this.CloseCompletedWorkorders();
+                    this.RefreshActiveWorkorders();
+                }
+            }
+        }
+
+        private void CloseCompletedWorkorders()
+        {
+            for (int i = 0; i < this._ActiveWorkOrders.Keys.Count; i++)
+            {
+                string lineNo = this._ActiveWorkOrders.Keys[i];
+                Workorder workorder = this._ActiveWorkOrders[lineNo];
+                this._DbContext.ChangeTracker.QueryTrackingBehavior = this._OldBefahavior;
+                Workorder dbItem = this._DbContext.Set<Workorder>().Where(x => x.RecordId == workorder.RecordId).Single();
+                if (dbItem.QtyGood >= dbItem.QtyReq)
+                {
+                    dbItem.OrderStatus = Workorder.WORKORDER_SATUS_CLOSED;
+                    dbItem.TimeEndActual = DateTime.Now;
+                    GlobalConstants.ModifyEntityStatus(dbItem, this._DbContext);
+                    this._DbContext.SaveChanges();
+
+                    this._DbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+                }
             }
         }
 

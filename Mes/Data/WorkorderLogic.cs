@@ -20,8 +20,11 @@ namespace Imms.Mes.Data
 
         protected override void AfterUpdate(Workorder item, DbContext dbContext)
         {
-            Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
-            Task.Run(() => dataService.RefreshActiveWorkorders());
+            if (item.OrderStatus > 0)
+            {
+                Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
+                Task.Run(() => dataService.RefreshActiveWorkorders());
+            }
         }
 
         public void StartWorkder(Workorder workorder)

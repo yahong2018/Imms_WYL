@@ -88,7 +88,7 @@ namespace Imms.Mes.Services
             }
             catch (Exception e)
             {
-                GlobalConstants.DefaultLogger.Error(e.Message);
+                GlobalConstants.DefaultLogger.Error("Socket移出失败："+e.Message);
                 GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
         }
@@ -153,7 +153,7 @@ namespace Imms.Mes.Services
             }
             catch (Exception ex)
             {
-                GlobalConstants.DefaultLogger.Error(ex.Message);
+                GlobalConstants.DefaultLogger.Error("数据接收失败："+ex.Message);
                 GlobalConstants.DefaultLogger.Debug(ex.StackTrace);
             }
         }
@@ -176,12 +176,12 @@ namespace Imms.Mes.Services
 
         public virtual async Task OnDisconnected(WebSocket socket)
         {
-            Console.WriteLine("Socket 断开了");
+            Console.WriteLine("Socket 断开");
             await WebSocketConnectionManager.RemoveSocket(WebSocketConnectionManager.GetId(socket));
         }
 
         public async Task SendMessageAsync(WebSocket socket, string message)
-        {
+        {            
             if (socket.State != WebSocketState.Open)
             {
                 return;
@@ -198,7 +198,7 @@ namespace Imms.Mes.Services
             }
             catch (Exception e)
             {
-                GlobalConstants.DefaultLogger.Error(e.Message);
+                GlobalConstants.DefaultLogger.Error("数据发送失败："+e.Message);
                 GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
         }

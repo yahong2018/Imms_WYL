@@ -21,7 +21,7 @@ namespace Imms.Mes.Services.Kanban.Line
         {
             string socketId = WebSocketConnectionManager.GetId(socket);
             string lineNo = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
-            GlobalConstants.DefaultLogger.Info(lineNo+"已连接...");
+            GlobalConstants.DefaultLogger.Info(lineNo + "已连接...");
 
             KanbanClient kanban;
             lock (this)
@@ -33,8 +33,9 @@ namespace Imms.Mes.Services.Kanban.Line
                     {
                         kanban.Terminated = false;
                         kanban.Start();
+                        GlobalConstants.DefaultLogger.Info(lineNo + "已重新启动数据推送服务");
                     }
-                    return Task.Run(() => GlobalConstants.DefaultLogger.Info("空闲处理..."));
+                    return Task.Run(() => GlobalConstants.DefaultLogger.Info(lineNo + "已重新连接。"));
                 }
             }
 
@@ -90,7 +91,15 @@ namespace Imms.Mes.Services.Kanban.Line
                 if (lineData != null)
                 {
                     string lineDataMessage = lineData.ToJson();
-                    Service.SendMessageAsync(Socket, lineDataMessage).GetAwaiter();
+                    try
+                    {
+                        Service.SendMessageAsync(Socket, lineDataMessage).GetAwaiter();
+                    }
+                    catch (Exception e)
+                    {
+                        GlobalConstants.DefaultLogger.Error(this.LineNo + "发送数据失败：" + e.Message);
+                        GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                    }
                 }
 
                 Thread.Sleep(1000 * 1);

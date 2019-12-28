@@ -18,7 +18,8 @@ namespace Imms.Mes.Services.Kanban.Line
 
         public override bool Config()
         {
-            base.Config();
+            this.ServiceId = "DATA_SERVICE";
+            base.Config();            
 
             this._OldBefahavior = this._DbContext.ChangeTracker.QueryTrackingBehavior;
             this._DbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;

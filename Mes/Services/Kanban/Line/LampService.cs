@@ -16,12 +16,13 @@ namespace Imms.Mes.Services.Kanban.Line
         private SortedList<string, DateTime> _LastLightTimeList = new SortedList<string, DateTime>();
 
         public LampService(DataService dataService)
-        {
+        {            
             this._DataService = dataService;
         }
 
         public override bool Config()
         {
+            this.ServiceId = "LAMP_SERVICE";
             base.Config();
 
             this.RefreshTimes();
@@ -57,23 +58,30 @@ namespace Imms.Mes.Services.Kanban.Line
 
         protected override void DoInternalThreadProc()
         {
-            if (DateTime.Now.Day != this._Yestoday.Day)
+            try
             {
-                this._Yestoday = DateTime.Now;
-                this.RefreshTimes();
-            }
-
-            lock (this)
-            {
-                foreach (Workline line in this._Worklines)
+                if (DateTime.Now.Day != this._Yestoday.Day)
                 {
-                    string lineNo = line.LineCode;
-                    KanbanLineData lineData = this._DataService.GetLineData(lineNo);
-                    if (lineData != null)
+                    this._Yestoday = DateTime.Now;
+                    this.RefreshTimes();
+                }
+
+                lock (this)
+                {
+                    foreach (Workline line in this._Worklines)
                     {
-                        this.Light(lineData, line);
+                        string lineNo = line.LineCode;
+                        KanbanLineData lineData = this._DataService.GetLineData(lineNo);
+                        if (lineData != null)
+                        {
+                            this.Light(lineData, line);
+                        }
                     }
                 }
+            }catch(Exception e)
+            {
+                GlobalConstants.DefaultLogger.Error(e.Message);
+                GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
         }
 

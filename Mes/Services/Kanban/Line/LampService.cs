@@ -16,7 +16,7 @@ namespace Imms.Mes.Services.Kanban.Line
         private SortedList<string, DateTime> _LastLightTimeList = new SortedList<string, DateTime>();
 
         public LampService(DataService dataService)
-        {            
+        {
             this._DataService = dataService;
         }
 
@@ -48,6 +48,8 @@ namespace Imms.Mes.Services.Kanban.Line
             lock (this)
             {
                 DateTime currentTime = DateTime.Now;
+                this._LowRateTimeList.Clear();
+                this._LastLightTimeList.Clear();
                 foreach (string lineCode in this._LineSpans.Keys)
                 {
                     this._LowRateTimeList.Add(lineCode, new DateTime(9999, 12, 31));
@@ -78,7 +80,8 @@ namespace Imms.Mes.Services.Kanban.Line
                         }
                     }
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 GlobalConstants.DefaultLogger.Error(e.Message);
                 GlobalConstants.DefaultLogger.Debug(e.StackTrace);
@@ -113,9 +116,13 @@ namespace Imms.Mes.Services.Kanban.Line
             {
                 return;
             }
+            if (lineData.line_detail_data.Where(x => x.is_current_item).Count() == 0)
+            {
+                return;
+            }
 
             DateTime currentTime = DateTime.Now;
-            Detail currentItem = lineData.line_detail_data.Where(x => x.is_current_item).Single();            
+            Detail currentItem = lineData.line_detail_data.Where(x => x.is_current_item).Single();
             DateTime firstTime = DateTime.Parse(currentTime.Date.ToString("yyyy/MM/dd") + " " + currentItem.time_begin).AddMinutes(currentItem.delay_time);
 
             int targetLamp = this._LampStatusList[lineNo];

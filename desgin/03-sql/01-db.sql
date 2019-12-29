@@ -122,7 +122,7 @@ INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) V
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status)VALUES ('SYS02','SYS02', '看板系统', '', 1, '', '', '0xf0ae',0);
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02', 'RUN', '运行');
 
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_05', 'SYS02_05', '生产班次', 'app.view.timesheet.TimeSheet', 0, '',  'SYS02', '0xf0c9',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_05', 'SYS02_05', '生产班次', 'app.view.imms.timesheet.TimeSheet', 0, '',  'SYS02', '0xf0c9',0);
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_01', 'SYS02_01', '组织结构', 'app.view.imms.org.Organization', 1, '',  'SYS02', '0xf0e8',0);
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_02', 'SYS02_02', '操作员管理', 'app.view.imms.org.operator.Operator',2, '', 'SYS02', '0xf2be',0);
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_03', 'SYS03_03', '生产计划', 'app.view.imms.mfc.workorder.Workorder', 3, '', 'SYS02', '0xf03a',0);

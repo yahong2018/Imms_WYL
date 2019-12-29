@@ -83,7 +83,7 @@ namespace Imms.Mes.Services.Kanban.Line
             }
             catch (Exception e)
             {
-                GlobalConstants.DefaultLogger.Error(e.Message);
+                GlobalConstants.DefaultLogger.Error("灯光控制出现异常:" + e.Message);
                 GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
         }

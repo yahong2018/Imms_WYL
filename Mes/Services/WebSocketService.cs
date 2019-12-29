@@ -62,12 +62,18 @@ namespace Imms.Mes.Services
             WebSocket _socket;
             _sockets.TryGetValue(key, out _socket);
             return _socket;
-
         }
 
         public string GetId(WebSocket socket)
         {
-            return _sockets.FirstOrDefault(p => p.Value == socket).Key;
+            try
+            {
+                return _sockets.FirstOrDefault(p => p.Value == socket).Key;
+            }
+            catch
+            {
+                return null;
+            }
         }
         public void AddSocket(WebSocket socket, string key)
         {
@@ -88,7 +94,7 @@ namespace Imms.Mes.Services
             }
             catch (Exception e)
             {
-                GlobalConstants.DefaultLogger.Error("Socket移出失败："+e.Message);
+                GlobalConstants.DefaultLogger.Error("Socket移除失败：" + e.Message);
                 GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
         }
@@ -153,8 +159,10 @@ namespace Imms.Mes.Services
             }
             catch (Exception ex)
             {
-                GlobalConstants.DefaultLogger.Error("数据接收失败："+ex.Message);
+                GlobalConstants.DefaultLogger.Error("数据接收失败：" + ex.Message);
                 GlobalConstants.DefaultLogger.Debug(ex.StackTrace);
+
+                handleMessage(new WebSocketReceiveResult(0, WebSocketMessageType.Close, false), null);
             }
         }
     }
@@ -181,7 +189,7 @@ namespace Imms.Mes.Services
         }
 
         public async Task SendMessageAsync(WebSocket socket, string message)
-        {            
+        {
             if (socket.State != WebSocketState.Open)
             {
                 return;
@@ -198,7 +206,7 @@ namespace Imms.Mes.Services
             }
             catch (Exception e)
             {
-                GlobalConstants.DefaultLogger.Error("数据发送失败："+e.Message);
+                GlobalConstants.DefaultLogger.Error("数据发送失败：" + e.Message);
                 GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
         }

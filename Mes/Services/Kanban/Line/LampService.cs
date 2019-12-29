@@ -16,7 +16,7 @@ namespace Imms.Mes.Services.Kanban.Line
         private SortedList<string, DateTime> _LastLightTimeList = new SortedList<string, DateTime>();
 
         public LampService(DataService dataService)
-        {            
+        {
             this._DataService = dataService;
         }
 
@@ -78,9 +78,10 @@ namespace Imms.Mes.Services.Kanban.Line
                         }
                     }
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
-                GlobalConstants.DefaultLogger.Error(e.Message);
+                GlobalConstants.DefaultLogger.Error("灯光控制出现异常:" + e.Message);
                 GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
         }
@@ -115,7 +116,7 @@ namespace Imms.Mes.Services.Kanban.Line
             }
 
             DateTime currentTime = DateTime.Now;
-            Detail currentItem = lineData.line_detail_data.Where(x => x.is_current_item).Single();            
+            Detail currentItem = lineData.line_detail_data.Where(x => x.is_current_item).Single();
             DateTime firstTime = DateTime.Parse(currentTime.Date.ToString("yyyy/MM/dd") + " " + currentItem.time_begin).AddMinutes(currentItem.delay_time);
 
             int targetLamp = this._LampStatusList[lineNo];

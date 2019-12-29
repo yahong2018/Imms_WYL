@@ -59,6 +59,22 @@ namespace Imms.Security.Data.Domain
 
     public partial class SystemProgram : BaseProgram
     {
+        public bool Leaf
+        {
+            get
+            {
+                return this.Children.Count == 0;
+            }
+        }
+
+        public bool Expanded
+        {
+            get
+            {
+                return this.Children.Count > 0;
+            }
+        }
+        
         public virtual List<ProgramPrivilege> Privielges { get; set; } = new List<ProgramPrivilege>();
 
         public virtual List<SystemProgram> Children { get; set; } = new List<SystemProgram>();

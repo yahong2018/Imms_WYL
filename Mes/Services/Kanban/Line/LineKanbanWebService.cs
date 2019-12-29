@@ -21,7 +21,7 @@ namespace Imms.Mes.Services.Kanban.Line
         {
             string socketId = WebSocketConnectionManager.GetId(socket);
             string lineNo = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
-            GlobalConstants.DefaultLogger.Info(lineNo + "已连接...");
+            GlobalConstants.DefaultLogger.Info("SocketId:" + socketId + "连接的产线为:" + lineNo);
 
             KanbanClient kanban;
             lock (this)
@@ -31,7 +31,7 @@ namespace Imms.Mes.Services.Kanban.Line
                     kanban = _KanbanList[socketId];
                     if (kanban.Terminated)
                     {
-                        kanban.Terminated = false;
+                        kanban.Terminated = false;                        
                         kanban.Start();
                         GlobalConstants.DefaultLogger.Info(lineNo + "已重新启动数据推送服务");
                     }
@@ -43,6 +43,7 @@ namespace Imms.Mes.Services.Kanban.Line
             kanban.Service = this;
             kanban.LineNo = lineNo;
             kanban.Socket = socket;
+            kanban.SocketId = socketId;
             lock (this)
             {
                 _KanbanList.Add(socketId, kanban);
@@ -57,6 +58,8 @@ namespace Imms.Mes.Services.Kanban.Line
         public override void OnConnected(WebSocket socket)
         {
             base.OnConnected(socket);
+            string socketId = WebSocketConnectionManager.GetId(socket);
+            GlobalConstants.DefaultLogger.Info("收到Socket连接:" + socketId);
         }
 
         public override async Task OnDisconnected(WebSocket socket)
@@ -80,11 +83,13 @@ namespace Imms.Mes.Services.Kanban.Line
     {
         public LineKanbanService Service { get; set; }
         public string LineNo { get; set; }
+        public string SocketId{get;set;}
         public WebSocket Socket { get; set; }
         public bool Terminated { get; set; }
 
         public void Start()
         {
+            GlobalConstants.DefaultLogger.Info("SocketId:"+this.SocketId+", LineNo:"+this.LineNo+"的WebSocket开始推送数据");
             while (!this.Terminated)
             {
                 KanbanLineData lineData = Service.DataService.GetLineData(this.LineNo);
@@ -104,6 +109,8 @@ namespace Imms.Mes.Services.Kanban.Line
 
                 Thread.Sleep(1000 * 1);
             }
+
+            GlobalConstants.DefaultLogger.Info("SocketId:"+this.SocketId+", LineNo:"+this.LineNo+"的WebSocket推送数据已停止");
         }
     }
 }

@@ -94,7 +94,7 @@ namespace Imms.Mes.Services
             }
             catch (Exception e)
             {
-                GlobalConstants.DefaultLogger.Error("Socket移除失败：" + e.Message);
+                GlobalConstants.DefaultLogger.Error("Socket移除出现异常：" + e.Message);
                 GlobalConstants.DefaultLogger.Debug(e.StackTrace);
             }
         }
@@ -184,8 +184,9 @@ namespace Imms.Mes.Services
 
         public virtual async Task OnDisconnected(WebSocket socket)
         {
-            Console.WriteLine("Socket 断开");
-            await WebSocketConnectionManager.RemoveSocket(WebSocketConnectionManager.GetId(socket));
+            String id = WebSocketConnectionManager.GetId(socket);
+            GlobalConstants.DefaultLogger.Info("Socket:" + id + "断开");
+            await WebSocketConnectionManager.RemoveSocket(id);
         }
 
         public async Task SendMessageAsync(WebSocket socket, string message)

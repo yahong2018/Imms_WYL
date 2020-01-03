@@ -18,8 +18,8 @@ namespace Imms.Mes.Services.Kanban.Line
 
         public override bool Config()
         {
-            this.ServiceId = "DATA_SERVICE";
-            base.Config();            
+            this.ServiceId = "LINE_KANBAN_DATA_SERVICE";
+            base.Config();
 
             this._OldBefahavior = this._DbContext.ChangeTracker.QueryTrackingBehavior;
             this._DbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
@@ -31,13 +31,15 @@ namespace Imms.Mes.Services.Kanban.Line
         {
             lock (this)
             {
-                this.RefreshAllLineData();
-
                 if (DateTime.Now.Day != this._OldTime.Day)
                 {
                     this.CloseCompletedWorkorders();
                     this.RefreshActiveWorkorders();
+
+                    this._OldTime = DateTime.Now;
                 }
+
+                this.RefreshAllLineData();
             }
         }
 
@@ -59,6 +61,18 @@ namespace Imms.Mes.Services.Kanban.Line
                     this._DbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                 }
             }
+        }
+
+        public string GetLineDataString(string lineNo)
+        {
+            lock (this)
+            {
+                if (this._AllLineData.ContainsKey(lineNo))
+                {
+                    return this._AllLineData[lineNo].ToJson();
+                }
+            }
+            return null;
         }
 
         public KanbanLineData GetLineData(string lineNo)

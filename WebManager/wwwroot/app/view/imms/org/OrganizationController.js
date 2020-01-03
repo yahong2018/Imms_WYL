@@ -14,8 +14,7 @@ Ext.define("app.view.imms.org.OrganizationController", {
         grid.getStore().getAllByParent();
     },
 
-    openLineKanban: function () {
-        debugger;
+    openLineKanban: function () {        
         var grid = this.getView().down('org_workline_Workline');
         var record = grid.getSelectedRecord();
         if (record == null) {
@@ -26,10 +25,16 @@ Ext.define("app.view.imms.org.OrganizationController", {
     },
 
     openWorkshopKanban: function () {
-        alert("还未配置好")
+        var grid = this.getView().down('org_workshop_Workshop');
+        var record = grid.getSelectedRecord();
+        if (record == null) {
+            Ext.Msg.alert("系统提示", "请先选择一个需要监控的工场！");
+            return;
+        }
+        window.open('kanban/workshop?workshopCode=' + record.get("orgCode"), '_blank', 'fullscreen=1');
     },
 
     openPlantKanban: function () {
-        alert("还未配置好")
+        window.open('kanban/factory', '_blank', 'fullscreen=1');
     }
 });

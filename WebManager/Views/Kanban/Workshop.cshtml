@@ -1,0 +1,283 @@
+<!DOCTYPE>
+<html>
+
+<head>
+    <title>工场板</title>
+    <base href="@Context.Request.PathBase.ToString()/ " />
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <style>
+        html,
+        body {
+            background-color: white;
+            color: black;
+            padding: 5px;
+            margin: 0px;
+            font-family: '微软雅黑';
+        }
+
+        .under_line {
+            border-bottom: 1px solid black;
+        }
+
+        .title {
+            font-size: 48px;
+            text-align: center;
+        }
+
+        .sub_title_panel {
+            height: 50px;
+            line-height: 30px;
+            vertical-align: middle;
+
+        }
+
+        .workshop {
+            font-size: 18px;
+        }
+
+        .sub_title {
+            font-size: 32px;
+            width: 530px;
+            text-align: left;
+            color: blue;
+            float: right;
+        }
+
+        .legend_panel {
+            font-size: 18px;
+            height: 28px;
+        }
+
+        .legend {
+            float: left;
+        }
+
+        .legend_block {
+            float: left;
+            margin-left: 5px;
+            height: 15px;
+            width: 30px;
+            margin-top: 5px;
+        }
+
+        .time {
+            width: 530px;
+            float: right;
+        }
+
+        .center_table {
+            width: 1000px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid darkgray;
+        }
+
+        .data_header {
+            background-color: darkblue;
+            color: white;
+            height: 55px;
+        }
+
+        .center_table>tbody tr {
+            height: 50px;
+        }
+
+        .center_table>tbody tr td:nth-child(1) {
+            text-align: center;
+        }
+
+        .center_table>tbody tr td:nth-child(2) {
+            text-align: center;
+        }
+
+        .center_table>tbody tr td:nth-child(3) {
+            text-align: right;
+            padding-right: 8px;
+        }
+
+        .center_table>tbody tr td:nth-child(4) {
+            text-align: right;
+            padding-right: 8px;
+        }
+
+        .center_table>tbody tr td:nth-child(5) {
+            text-align: right;
+            padding-right: 8px;
+        }
+
+        .center_table>tbody tr td:nth-child(6) {
+            text-align: right;
+            padding-right: 8px;
+        }
+
+        .center_table>tbody tr td:nth-child(7) {
+            text-align: right;
+            padding-right: 8px;
+        }
+
+        .center_table>tbody tr td:nth-child(8) {
+            text-align: right;
+            padding-right: 8px;
+        }
+
+        .center_table>tbody tr td:nth-child(9) {
+            text-align: right;
+            padding-right: 8px;
+        }
+
+        .foot {
+            font-size: 20px;
+            height: 50px;
+            line-height: 50px;
+            vertical-align: middle;
+        }
+
+        .over_rate {
+            background-color: blue;
+        }
+
+        .reach_rate {
+            background-color: green;
+        }
+
+        .below_rate {
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="width: 1000px;position: absolute; left: 50%;margin-left:-500px;">
+        <div class="header">
+            <div class="title"><span id="workshop_1">A3</span> Production Floor-<span id="workshop_2">A3</span> Floor
+            </div>
+            <div class="sub_title_panel">
+                <div class="workshop">
+                    <div style="float:left;width: 150px;">工场:<span id="workshop_3" class="under_line">A3</span>
+                    </div>
+                    <div style="float:left;width: 300px;"> 客户:<span id="customer" class="under_line">威雅利</span>
+                    </div>
+                </div>
+                <div class="sub_title">
+                    工场板
+                </div>
+                <div></div>
+            </div>
+            <div class="legend_panel">
+                <div class="legend">
+                    <div style="float:left;width: 100px;">
+                        <div style="float: left">超标</div>
+                        <div class="legend_block" style="background-color: blue;"> &nbsp;</div>
+                    </div>
+                    <div style="float:left;width: 100px;">
+                        <div style="float: left">达标</div>
+                        <div class="legend_block" style="background-color: green;"> &nbsp;</div>
+                    </div>
+                    <div style="float:left;width: 100px;">
+                        <div style="float: left">未达标</div>
+                        <div class="legend_block" style="background-color: red;"> &nbsp;</div>
+                    </div>
+                </div>
+                <div class="time">
+                    <div id="current_time" style="text-align: right;">2020年01月02日 21:26 </div>
+                </div>
+            </div>
+        </div>
+        <table class="center_table" id="data_table">
+            <thead>
+                <tr class="data_header">
+                    <th style="width: 80px;">产线</th>
+                    <th style="width: 300px;">型号</th>
+                    <th>今日目标数</th>
+                    <th>目标完成数</th>
+                    <th>实际完成数</th>
+                    <th>实际达成率</th>
+                    <th>目标数</th>
+                    <th>生产数</th>
+                    <th>不良数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>A201-1</td>
+                    <td>AF98</td>
+                    <td>1735</td>
+                    <td>763</td>
+                    <td>715</td>
+                    <td >110%</td>
+                    <td>25</td>
+                    <td>23</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>A201-1</td>
+                    <td>AF98</td>
+                    <td>1735</td>
+                    <td>763</td>
+                    <td>715</td>
+                    <td >97%</td>
+                    <td>25</td>
+                    <td>23</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>A201-1</td>
+                    <td>AF98</td>
+                    <td>1735</td>
+                    <td>763</td>
+                    <td>715</td>
+                    <td >98%</td>
+                    <td>25</td>
+                    <td>23</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>A201-1</td>
+                    <td>AF98</td>
+                    <td>1735</td>
+                    <td>763</td>
+                    <td>715</td>
+                    <td >99%</td>
+                    <td>25</td>
+                    <td>23</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>A201-1</td>
+                    <td>AF98</td>
+                    <td>1735</td>
+                    <td>763</td>
+                    <td>715</td>
+                    <td >98%</td>
+                    <td>25</td>
+                    <td>23</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>A201-1</td>
+                    <td>AF98</td>
+                    <td>1735</td>
+                    <td>763</td>
+                    <td>715</td>
+                    <td >100%</td>
+                    <td>25</td>
+                    <td>23</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="foot">
+            <div>
+                平均生产线率：<span id="avg_rate">98.1%</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="js/kanban/Workshop.js"></script>
+
+</html>

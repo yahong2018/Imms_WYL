@@ -425,7 +425,7 @@ var WebSocketProxy = {
         try {
             var scheme = document.location.protocol === "https:" ? "wss" : "ws";
             var port = document.location.port ? (":" + document.location.port) : "";
-            var url = scheme + "://" + document.location.hostname + port + "/ws";
+            var url = scheme + "://" + document.location.hostname + port + "/line";
             var websocket = new WebSocket(url);
 
             this.websocket = websocket;

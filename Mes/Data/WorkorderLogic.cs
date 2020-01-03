@@ -22,8 +22,15 @@ namespace Imms.Mes.Data
         {
             if (item.OrderStatus > 0)
             {
-                Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
-                Task.Run(() => dataService.RefreshActiveWorkorders());
+                Imms.Mes.Services.Kanban.Line.DataService LineDataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
+                Task.Run(() => LineDataService.RefreshActiveWorkorders());
+
+                Imms.Mes.Services.Kanban.Workshop.WorkshopDataService workshopDataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Workshop.WorkshopDataService>();
+                Task.Run(() => workshopDataService.RefreshWorkorder());
+
+
+                Imms.Mes.Services.Kanban.Factory.FactoryDataService factoryDataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Factory.FactoryDataService>();
+                Task.Run(() => factoryDataService.RefreshWorkorder());
             }
         }
 
@@ -37,6 +44,12 @@ namespace Imms.Mes.Data
 
             Imms.Mes.Services.Kanban.Line.DataService dataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
             Task.Run(() => dataService.RefreshActiveWorkorders());
+
+            Imms.Mes.Services.Kanban.Workshop.WorkshopDataService workshopDataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Workshop.WorkshopDataService>();
+            Task.Run(() => workshopDataService.RefreshWorkorder());
+
+            Imms.Mes.Services.Kanban.Factory.FactoryDataService factoryDataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Factory.FactoryDataService>();
+            Task.Run(() => factoryDataService.RefreshWorkorder());
         }
 
         private void DoStart(Workorder workorder)

@@ -31,7 +31,7 @@ namespace Imms.Mes.Services.Kanban.Line
                     kanban = _KanbanList[socketId];
                     if (kanban.Terminated)
                     {
-                        kanban.Terminated = false;                        
+                        kanban.Terminated = false;
                         kanban.Start();
                         GlobalConstants.DefaultLogger.Info(lineNo + "已重新启动数据推送服务");
                     }
@@ -83,22 +83,21 @@ namespace Imms.Mes.Services.Kanban.Line
     {
         public LineKanbanService Service { get; set; }
         public string LineNo { get; set; }
-        public string SocketId{get;set;}
+        public string SocketId { get; set; }
         public WebSocket Socket { get; set; }
         public bool Terminated { get; set; }
 
         public void Start()
         {
-            GlobalConstants.DefaultLogger.Info("SocketId:"+this.SocketId+", LineNo:"+this.LineNo+"的WebSocket开始推送数据");
+            GlobalConstants.DefaultLogger.Info("SocketId:" + this.SocketId + ", LineNo:" + this.LineNo + "的WebSocket开始推送数据");
             while (!this.Terminated)
             {
-                KanbanLineData lineData = Service.DataService.GetLineData(this.LineNo);
-                if (lineData != null)
+                string data = Service.DataService.GetLineDataString(this.LineNo);
+                if (data != null)
                 {
-                    string lineDataMessage = lineData.ToJson();
                     try
                     {
-                        Service.SendMessageAsync(Socket, lineDataMessage).GetAwaiter();
+                        Service.SendMessageAsync(Socket, data).GetAwaiter();
                     }
                     catch (Exception e)
                     {
@@ -110,7 +109,7 @@ namespace Imms.Mes.Services.Kanban.Line
                 Thread.Sleep(1000 * 1);
             }
 
-            GlobalConstants.DefaultLogger.Info("SocketId:"+this.SocketId+", LineNo:"+this.LineNo+"的WebSocket推送数据已停止");
+            GlobalConstants.DefaultLogger.Info("SocketId:" + this.SocketId + ", LineNo:" + this.LineNo + "的WebSocket推送数据已停止");
         }
     }
 }

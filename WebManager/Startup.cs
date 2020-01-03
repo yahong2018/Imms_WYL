@@ -163,6 +163,8 @@ namespace Imms.WebManager
         {
             services.AddSingleton<Imms.Mes.Services.Kanban.Line.DataService, Imms.Mes.Services.Kanban.Line.DataService>();
             services.AddSingleton<Imms.Mes.Services.Kanban.Line.LampService, Imms.Mes.Services.Kanban.Line.LampService>();
+            services.AddSingleton<Imms.Mes.Services.Kanban.Workshop.WorkshopDataService, Imms.Mes.Services.Kanban.Workshop.WorkshopDataService>();
+            services.AddSingleton<Imms.Mes.Services.Kanban.Factory.FactoryDataService, Imms.Mes.Services.Kanban.Factory.FactoryDataService>();
 
             services.AddWebSocketManager();
         }
@@ -171,11 +173,19 @@ namespace Imms.WebManager
         {
             Imms.Mes.Services.Kanban.Line.DataService dataService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.DataService>();
             Imms.Mes.Services.Kanban.Line.LampService lampService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Line.LampService>();
+            Imms.Mes.Services.Kanban.Workshop.WorkshopDataService workshopDataService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Workshop.WorkshopDataService>();
+            Imms.Mes.Services.Kanban.Factory.FactoryDataService factoryDataService = app.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Factory.FactoryDataService>();
 
             lampService.Config();
             dataService.Config();
             dataService.Startup();
             lampService.Startup();
+
+            workshopDataService.Config();
+            workshopDataService.Startup();
+
+            factoryDataService.Config();
+            factoryDataService.Startup();
 
             var webSocketOptions = new WebSocketOptions()
             {
@@ -183,7 +193,9 @@ namespace Imms.WebManager
                 ReceiveBufferSize = 4 * 1024
             };
             app.UseWebSockets(webSocketOptions);
-            app.MapWebSocketManager("/ws", app.ApplicationServices.GetService<Mes.Services.Kanban.Line.LineKanbanService>());
+            app.MapWebSocketManager("/line", app.ApplicationServices.GetService<Mes.Services.Kanban.Line.LineKanbanService>());            
+            app.MapWebSocketManager("/workshop", app.ApplicationServices.GetService<Mes.Services.Kanban.Workshop.WorkshopWebService>());
+            app.MapWebSocketManager("/factory", app.ApplicationServices.GetService<Mes.Services.Kanban.Factory.FactoryWebService>());
         }
 
         public static IApplicationBuilder AppBuiloder { get; private set; }

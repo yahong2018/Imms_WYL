@@ -105,6 +105,16 @@ namespace Imms.WebManager.Controllers
         {
             return View("Line_Wrapper");
         }
+
+        [Route("workshop")]
+        public IActionResult Workshop(){
+            return View("Workshop");
+        }
+        
+        [Route("factory")]
+        public IActionResult Factory(){
+            return View("Factory");
+        }
     }
 
     public class OperatorItem

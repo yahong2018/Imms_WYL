@@ -24,14 +24,16 @@ Ext.define("app.ux.excel.ImporterViewModel", {
             columnEndIndex:-1,
             fieldMappings: [
                 {
-                    systemField: "lineNo",
-                    excelField: "Line",
+                    systemFieldCode: "orderNo",
+                    systemFieldLabel:"订单编号",
+                    excelFieldCode: "JobNum",
                     columnIndex: 0
                 },
                 {
-                    systemField: "orderNo",
-                    excelField: "JobNum",
-                    columnIndex: 2
+                    systemFieldCode: "production_no",
+                    systemFieldLabel:"产品编码",
+                    excelFieldCode: "PartNo",
+                    columnIndex: 1
                 },
             ]
         }

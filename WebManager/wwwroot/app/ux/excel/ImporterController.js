@@ -26,6 +26,9 @@ Ext.define("app.ux.excel.ImporterController", {
         if (activeIndex == 2 && !this.verifyRowSettings()) {
             return;
         }
+        if (activeIndex == 1) {
+            
+        }
 
         this.doCardNavigation(1);
     },
@@ -57,7 +60,7 @@ Ext.define("app.ux.excel.ImporterController", {
         var viewModel = this.getViewModel();
         var form = view.down('app_ux_excel_cards_File').down('form');
         if (!form.down('fileuploadfield').value) {
-            Ext.Msg.alert("系统提示","请先选择需要上传的文件!");
+            Ext.Msg.alert("系统提示", "请先选择需要上传的文件!");
             return;
         }
         var targetTable = this.getViewModel().get("target.tableName");
@@ -90,10 +93,10 @@ Ext.define("app.ux.excel.ImporterController", {
 
     verifyWorksheet: function () {
         var view = this.getView();
-        var viewModel = this.getViewModel();        
-        var radioGroup = view.down('app_ux_excel_cards_File').down('radiogroup');    
+        var viewModel = this.getViewModel();
+        var radioGroup = view.down('app_ux_excel_cards_File').down('radiogroup');
         var value = radioGroup.getValue().worksheets;
-        if (isNaN(value)){
+        if (isNaN(value)) {
             Ext.Msg.alert("系统提示", "请选择需要导入的Worksheet !");
             return false;
         }
@@ -102,18 +105,20 @@ Ext.define("app.ux.excel.ImporterController", {
         return true;
     },
 
-    getExcelFields:function(){
-        debugger;
-        
+    getExcelFields: function () {
         var view = this.getView();
+        var viewModel = this.getViewModel();
         var fieldPanel = view.down("app_ux_excel_cards_FieldSetting");
-        
+
         var rowIndex = fieldPanel.down("[name='field_row_index']").value;
         var columnStartIndex = fieldPanel.down("[name='field_column_start_index']").value;
         var columnEndIndex = fieldPanel.down("[name='field_column_end_index']").value;
 
-        if(isNaN(rowIndex) || isNaN(columnStartIndex) || isNaN(columnEndIndex)){
-            Ext.Msg.alert("系统提示","请设置正确的[字段行]和[列范围]!");
+        if (rowIndex == "" || isNaN(rowIndex)
+            || columnStartIndex == "" || isNaN(columnStartIndex)
+            || columnEndIndex == "" || isNaN(columnEndIndex)
+        ) {
+            Ext.Msg.alert("系统提示", "请设置正确的[字段行]和[列范围]!");
 
             return;
         }
@@ -122,19 +127,42 @@ Ext.define("app.ux.excel.ImporterController", {
         session.fieldRowIndex = rowIndex;
         session.columnStartIndex = columnStartIndex;
         session.columnEndIndex = columnEndIndex;
-        
+
         app.ux.Utils.ajaxRequest({
-            url:"api/misc/excel/getExcelFields",
-            method:"POST",
-            jsonData:session,
-            successCallback: function (result, response, opts){
+            url: "api/misc/excel/getExcelFields",
+            method: "POST",
+            jsonData: session,
+            successCallback: function (result, response, opts) {
                 debugger;
-                viewModel.set('session', result);
+                viewModel.set('session', result.data);
+                var grid = fieldPanel.down("gridpanel");
+
+                grid.getStore().removeAll();
+                grid.getStore().loadData(result.data.fieldMappings);
+
+                grid.columns[1].editor.store = [
+                    ['产品编号', '产品编号', 'production_no'],
+                    ['订单号', '订单号', 'order_no']
+                ];
             }
         });
     },
 
     verifyFieldsSettings: function () {
+        var grid = this.getView().down('app_ux_excel_cards_FieldSetting').down('gridpanel');
+        var store = grid.getStore();
+        if (store.getCount() == 0) {
+            Ext.Msg.alert("系统提示", "请设置正确的字段参数!");
+            return;
+        }
+        for (var i = 0; i < store.getCount(); i++) {
+            var record = store.getAt(i);
+            var systemFieldCode = record.get("systemFieldCode");
+            if (systemFieldCode == null || systemFieldCode == "") {
+                Ext.Msg.alert("系统提示", "请设置正确的字段参数!");
+                return;
+            }
+        }
         return true;
     },
 

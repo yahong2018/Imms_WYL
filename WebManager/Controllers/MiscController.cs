@@ -49,6 +49,10 @@ namespace Imms.WebManager.Controllers
                 sessionList[session.SessionId] = session;
             }
 
+            session.FieldMappings = new FieldMapping[]{
+                new FieldMapping(){ColumnIndex = 1, ExcelFieldCode="OrderNo",SystemFieldCode="order_no",SystemFieldLabel="订单号"},
+                new FieldMapping(){ColumnIndex = 2, ExcelFieldCode="PartNo",SystemFieldCode="production_no",SystemFieldLabel="产品编号"}
+            };
 
             return session;
         }
@@ -69,8 +73,9 @@ namespace Imms.WebManager.Controllers
 
     public class FieldMapping
     {
-        public string ExcelField { get; set; }
-        public string SystemField { get; set; }
+        public string ExcelFieldCode { get; set; }
+        public string SystemFieldCode { get; set; }
+        public string SystemFieldLabel{get;set;}
         public int ColumnIndex { get; set; }
     }
 }

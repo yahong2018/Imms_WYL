@@ -3,8 +3,8 @@ Ext.define("app.ux.excel.Importer", {
     xtype: "app_ux_excel_impoter",
     requires: [
         'Ext.layout.container.Card', "app.ux.excel.ImporterViewModel", "app.ux.excel.ImporterController"
-        , "app.ux.excel.cards.File",  "app.ux.excel.cards.FieldSetting",
-        "app.ux.excel.cards.RowSetting", "app.ux.excel.cards.Complete"        
+        , "app.ux.excel.cards.File", "app.ux.excel.cards.FieldSetting",
+        "app.ux.excel.cards.RowSetting", "app.ux.excel.cards.Complete"
     ],
     viewModel: {
         type: "excelImportViewModel",
@@ -15,12 +15,12 @@ Ext.define("app.ux.excel.Importer", {
     closeAction: 'destroy',
     modal: true,
     maximizable: true,
-    minimizable: true,    
-    height:500,
-    width:800,
-    bodyPadding:10,
-    layout:"fit",
-    title:"文件选择",
+    minimizable: true,
+    height: 500,
+    width: 800,
+    bodyPadding: 10,
+    layout: "fit",
+    title: "文件选择",
     items: [
         {
             xtype: "form",
@@ -28,11 +28,14 @@ Ext.define("app.ux.excel.Importer", {
             items: [
                 {
                     xtype: "app_ux_excel_cards_File"
-                }, {
+                },
+                {
                     xtype: "app_ux_excel_cards_FieldSetting"
-                },{
+                },
+                {
                     xtype: "app_ux_excel_cards_RowSetting"
-                },{
+                },
+                {
                     xtype: "app_ux_excel_cards_Complete"
                 }
             ]
@@ -47,17 +50,22 @@ Ext.define("app.ux.excel.Importer", {
         {
             text: "上一步",
             buttonId: "btnPrev",
-            disabled:true,
+            disabled: true,
             handler: "prevButtonClick"
         }, {
             text: "下一步",
-            buttonId: "btnNext",            
+            buttonId: "btnNext",
             handler: "nextButtonClick"
         }
     ],
-    listeners:{
-        afterrender:function(){
-           // this.maximize(true);
+    listeners: {
+        afterrender: function () {            
+            var grid = this.down('app_ux_excel_cards_FieldSetting').down('gridpanel');
+            // var store = grid.columns[1].getEditor().store;
+            // store.loadData([
+            //     { fieldLabel: '产品编号', fieldCode: 'production_no' },
+            //     { fieldLabel: '订单号', fieldCode: 'order_no' }
+            // ]);
         }
     }
 });

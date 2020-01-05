@@ -1,3 +1,18 @@
+-- 新增table
+create table mes_workstation_product_summary
+(
+    record_id           bigint     identity(1,1)   not null,
+    order_no            varchar(20)                not null,
+    part_no             varchar(20)                not null,
+    line_no             varchar(20)                not null,
+    workstation_code    varchar(20)                not null,
+    qty_good            int                        not null,
+    qty_bad             int                        not null,
+
+    primary key(record_id)
+);
+
+--修改存储过程
 ALTER procedure [dbo].[MES_ProcessDeviceData] 
     -- 1. 如果是按键，则读取品质代码表，进行不良报工
     -- 2. 如果光感，则进行良品报工    
@@ -216,3 +231,24 @@ begin
 	set @RespData= @RespData + '|3|良品:'+cast(@QtyGood as varchar)+'|0'; 
 	set @RespData= @RespData + '|4|不良品:'+cast(@QtyBad as varchar)+'|0'; 	
 end;
+
+-- 增加程序及其权限
+update mes_system_program
+  set program_name = '报工流水',
+      show_order = 6
+  where record_id = 'SYS02_04';
+
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_06', 'SYS03_06', '生产实绩', 'app.view.imms.mfc.workstationProductSummary.WorkstationProductSummary', 4, '', 'SYS02', '0xf1ea',0);
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_06', 'RUN', '运行');
+
+INSERT INTO mes_role_privilege (role_id, program_privilege_id, program_id, privilege_code)
+    SELECT
+        1,
+        prv.record_id,
+        prv.program_id,
+        prv.privilege_code
+    FROM mes_program_privilege prv
+    WHERE record_id NOT IN (
+        SELECT program_privilege_id  FROM mes_role_privilege
+    );
+  

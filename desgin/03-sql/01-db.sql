@@ -126,7 +126,8 @@ INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_01', 'SYS02_01', '组织结构', 'app.view.imms.org.Organization', 1, '',  'SYS02', '0xf0e8',0);
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_02', 'SYS02_02', '操作员管理', 'app.view.imms.org.operator.Operator',2, '', 'SYS02', '0xf2be',0);
 INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_03', 'SYS03_03', '生产计划', 'app.view.imms.mfc.workorder.Workorder', 3, '', 'SYS02', '0xf03a',0);
-INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_04', 'SYS03_04', '生产实绩', 'app.view.imms.mfc.workorderActual.WorkorderActual', 4, '', 'SYS02', '0xf0cb',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_06', 'SYS03_06', '生产实绩', 'app.view.imms.mfc.workstationProductSummary.WorkstationProductSummary', 4, '', 'SYS02', '0xf1ea',0);
+INSERT INTO mes_system_program (record_id,program_code, program_name, url, show_order, parameters, parent_id, glyph,program_status) VALUES ('SYS02_04', 'SYS03_04', '报工流水', 'app.view.imms.mfc.workorderActual.WorkorderActual', 6, '', 'SYS02', '0xf0cb',0);
 
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'RUN', '运行');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_01', 'INSERT', '新增');
@@ -154,6 +155,8 @@ INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) V
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_05', 'INSERT', '新增');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_05', 'UPDATE', '修改');
 INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_05', 'DELETE', '删除');
+
+INSERT INTO mes_program_privilege (program_id, privilege_code, privilege_name) VALUES ('SYS02_06', 'RUN', '运行');
 
 -- --------------------------------------------------------------------------------------------------------------------
 
@@ -337,5 +340,16 @@ create table mes_workshift_span
     primary key(record_id)
 );
 
+create table mes_workstation_product_summary
+(
+    record_id           bigint     identity(1,1)   not null,
+    order_no            varchar(20)                not null,
+    part_no             varchar(20)                not null,
+    line_no             varchar(20)                not null,
+    workstation_code    varchar(20)                not null,
+    qty_good            int                        not null,
+    qty_bad             int                        not null,
 
+    primary key(record_id)
+);
 

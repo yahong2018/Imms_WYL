@@ -38,4 +38,13 @@ namespace Imms.WebManager.Controllers
             this.Logic = new SimpleCRUDLogic<WorkorderActual>();
         }
     }
+
+    [Route("api/imms/mfc/workstationProductSummary")]
+    public class WorkstationProductSummaryController : SimpleCRUDController<WorkstationProductSummary>
+    {
+        public WorkstationProductSummaryController()
+        {
+            this.Logic = new SimpleCRUDLogic<WorkstationProductSummary>();
+        }
+    }
 }

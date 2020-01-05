@@ -85,6 +85,32 @@ namespace Imms.Mes.Data.Domain
         public string DefectName { get; set; }
     }
 
+    public class WorkstationProductSummary:Entity<long>
+    {
+        public string OrderNo { get; set; }
+        public string PartNo { get; set; }
+        public string LineNo { get; set; }
+        public string WorkstationCode { get; set; }
+        public int QtyGood { get; set; }
+        public int QtyBad { get; set; }
+    }
+
+    public class WorkstationProductSummaryfigure : EntityConfigure<WorkstationProductSummary>
+    {
+        protected override void InternalConfigure(EntityTypeBuilder<WorkstationProductSummary> builder)
+        {
+            base.InternalConfigure(builder);
+            builder.ToTable("mes_workstation_product_summary");
+            ImmsDbContext.RegisterEntityTable<Defect>("mes_workstation_product_summary");
+
+            builder.Property(e => e.OrderNo).HasColumnName("order_no");
+            builder.Property(e => e.LineNo).HasColumnName("line_no");
+            builder.Property(e => e.PartNo).HasColumnName("part_no");
+            builder.Property(e => e.WorkstationCode).HasColumnName("workstation_code");            
+            builder.Property(e => e.QtyGood).HasColumnName("qty_good");
+            builder.Property(e => e.QtyBad).HasColumnName("qty_bad");
+        }
+    }
 
     public class WorkorderConfigure : OrderEntityConfigure<Workorder>
     {
@@ -112,7 +138,6 @@ namespace Imms.Mes.Data.Domain
             builder.Property(e => e.WorkerCount).HasColumnName("worker_count");
         }
     }
-
 
     public class ActiveWorkorderConfigure : EntityConfigure<ActiveWorkorder>
     {

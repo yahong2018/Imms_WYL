@@ -56,17 +56,17 @@ namespace Imms.Mes.Services.Kanban.Workshop
 
         protected override void DoInternalThreadProc()
         {
-            if (this._LastDay.Day != DateTime.Now.Day)
-            {
-                this._WorkshopDataList.Clear();
-
-                this.RefreshOrgData();
-                this.RefreshWorkorder();
-
-                this._LastDay = DateTime.Now;
-            }
             lock (this)
             {
+                if (this._LastDay.Day != DateTime.Now.Day)
+                {
+                    this._WorkshopDataList.Clear();
+
+                    this.RefreshOrgData();
+                    this.RefreshWorkorder();
+
+                    this._LastDay = DateTime.Now;
+                }
                 this.RefreshKanbanData();
             }
         }
@@ -85,7 +85,7 @@ namespace Imms.Mes.Services.Kanban.Workshop
                      .Where(x => DateTime.Parse(today + " " + x.TimeBegin) < currentTime)
                      .OrderByDescending(x => x.Seq)
                      .FirstOrDefault();
-                kanbanData.IsBreak = lastSpan.IsBreak == 1;
+                kanbanData.IsBreak = (lastSpan == null || lastSpan.IsBreak == 1);
                 if (kanbanData.IsBreak)
                 {
                     continue;  //现在是休息时间
@@ -115,7 +115,7 @@ namespace Imms.Mes.Services.Kanban.Workshop
             }
         }
 
-        private LineSummaryData CreateLineSummayData(WorkshopKanbaData kanbanData,DateTime currentTime, WorkshiftSpan lastSpan, int passedHours, int secconds, Workorder order)
+        private LineSummaryData CreateLineSummayData(WorkshopKanbaData kanbanData, DateTime currentTime, WorkshiftSpan lastSpan, int passedHours, int secconds, Workorder order)
         {
             LineSummaryData itemData = new LineSummaryData();
             itemData.LineNo = order.LineNo;
@@ -126,11 +126,11 @@ namespace Imms.Mes.Services.Kanban.Workshop
             itemData.DayCurrentTarget += currentTarget;
             itemData.CurrentTarget = currentTarget;
 
-            int qtyGood = this._DbContext.Set<Imms.Mes.Data.Domain.LineProductSummaryDateSpan>().Where(x=>x.ProductDate == currentTime.Date && x.LineNo == order.LineNo).Sum(x=>x.QtyGood);
+            int qtyGood = this._DbContext.Set<Imms.Mes.Data.Domain.LineProductSummaryDateSpan>().Where(x => x.ProductDate == currentTime.Date && x.LineNo == order.LineNo).Sum(x => x.QtyGood);
             itemData.DayFinished = qtyGood;
 
             Imms.Mes.Data.Domain.LineProductSummaryDateSpan productSummay = this._DbContext.Set<Imms.Mes.Data.Domain.LineProductSummaryDateSpan>()
-                   .Where(x => x.SpanId == lastSpan.RecordId && x.LineNo == order.LineNo && x.ProductDate ==currentTime.Date)
+                   .Where(x => x.SpanId == lastSpan.RecordId && x.LineNo == order.LineNo && x.ProductDate == currentTime.Date)
                    .SingleOrDefault();
             if (productSummay != null)
             {
@@ -143,6 +143,7 @@ namespace Imms.Mes.Services.Kanban.Workshop
 
         public void RefreshWorkorder()
         {
+            GlobalConstants.DefaultLogger.Info(this.ServiceId+"开始刷新工单...");
             lock (this)
             {
                 this._ActiveWorkOrderList.Clear();
@@ -151,10 +152,12 @@ namespace Imms.Mes.Services.Kanban.Workshop
                          .ToList();
                 this._ActiveWorkOrderList.AddRange(orders);
             }
+            GlobalConstants.DefaultLogger.Info(this.ServiceId+"工单刷新完毕");
         }
 
         public void RefreshOrgData()
         {
+            GlobalConstants.DefaultLogger.Info(this.ServiceId+"开始刷新组织结构与工作班次");
             lock (this)
             {
                 this._WorkshopList.Clear();
@@ -179,6 +182,7 @@ namespace Imms.Mes.Services.Kanban.Workshop
                     data.WorkHours = spans.Where(x => x.IsBreak == 0).Count();
                 }
             }
+            GlobalConstants.DefaultLogger.Info(this.ServiceId+"组织结构与工作班次刷新完毕");
         }
 
         public override bool Config()
@@ -287,7 +291,7 @@ namespace Imms.Mes.Services.Kanban.Workshop
             {
                 string data = this.DataService.GetData(this.WorkshopCode);
                 if (data != null)
-                {                    
+                {
                     try
                     {
                         WebService.SendMessageAsync(Socket, data).GetAwaiter();

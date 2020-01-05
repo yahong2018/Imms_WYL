@@ -23,6 +23,7 @@ using Microsoft.IdentityModel.Tokens;
 using IdentityModel;
 using System.Text;
 using Imms.Mes.Services;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Imms.WebManager
 {
@@ -95,6 +96,11 @@ namespace Imms.WebManager
                 };
             }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
             {
+            });
+
+            services.Configure<FormOptions>(x =>
+            {
+                x.MultipartBodyLengthLimit = 30_000_000; //上传的文件，最大不能超过30MB
             });
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -193,7 +199,7 @@ namespace Imms.WebManager
                 ReceiveBufferSize = 4 * 1024
             };
             app.UseWebSockets(webSocketOptions);
-            app.MapWebSocketManager("/line", app.ApplicationServices.GetService<Mes.Services.Kanban.Line.LineKanbanService>());            
+            app.MapWebSocketManager("/line", app.ApplicationServices.GetService<Mes.Services.Kanban.Line.LineKanbanService>());
             app.MapWebSocketManager("/workshop", app.ApplicationServices.GetService<Mes.Services.Kanban.Workshop.WorkshopWebService>());
             app.MapWebSocketManager("/factory", app.ApplicationServices.GetService<Mes.Services.Kanban.Factory.FactoryWebService>());
         }

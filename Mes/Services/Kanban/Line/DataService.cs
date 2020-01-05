@@ -13,7 +13,7 @@ namespace Imms.Mes.Services.Kanban.Line
         private SortedList<string, Workorder> _ActiveWorkOrders = new SortedList<string, Workorder>();
 
         private int MAX_ITEM_COUNT = 4;
-        private DateTime _OldTime = DateTime.Now;
+        private DateTime _LastDay = DateTime.Now;
         private QueryTrackingBehavior _OldBefahavior;
 
         public override bool Config()
@@ -31,12 +31,12 @@ namespace Imms.Mes.Services.Kanban.Line
         {
             lock (this)
             {
-                if (DateTime.Now.Day != this._OldTime.Day)
+                if (DateTime.Now.Day != this._LastDay.Day)
                 {
                     this.CloseCompletedWorkorders();
                     this.RefreshActiveWorkorders();
 
-                    this._OldTime = DateTime.Now;
+                    this._LastDay = DateTime.Now;
                 }
 
                 this.RefreshAllLineData();
@@ -45,11 +45,12 @@ namespace Imms.Mes.Services.Kanban.Line
 
         private void CloseCompletedWorkorders()
         {
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "正开始清理已完成的工单...");
+            this._DbContext.ChangeTracker.QueryTrackingBehavior = this._OldBefahavior;
             for (int i = 0; i < this._ActiveWorkOrders.Keys.Count; i++)
             {
                 string lineNo = this._ActiveWorkOrders.Keys[i];
                 Workorder workorder = this._ActiveWorkOrders[lineNo];
-                this._DbContext.ChangeTracker.QueryTrackingBehavior = this._OldBefahavior;
                 Workorder dbItem = this._DbContext.Set<Workorder>().Where(x => x.RecordId == workorder.RecordId).Single();
                 if (dbItem.QtyGood >= dbItem.QtyReq)
                 {
@@ -58,9 +59,11 @@ namespace Imms.Mes.Services.Kanban.Line
                     GlobalConstants.ModifyEntityStatus(dbItem, this._DbContext);
                     this._DbContext.SaveChanges();
 
-                    this._DbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+                    GlobalConstants.DefaultLogger.Info(this.ServiceId + "已关闭工单:" + dbItem.OrderNo);
                 }
             }
+            this._DbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "工单清理已完毕...");
         }
 
         public string GetLineDataString(string lineNo)
@@ -89,6 +92,7 @@ namespace Imms.Mes.Services.Kanban.Line
 
         public void RefreshActiveWorkorders()
         {
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "正在开始刷新工单...");
             lock (this)
             {
                 this._ActiveWorkOrders.Clear();
@@ -123,6 +127,7 @@ namespace Imms.Mes.Services.Kanban.Line
                     }
                 }
             }
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "工单刷新完毕...");
         }
 
         private KanbanLineData CreateLineData(Workorder activeWorkorder)

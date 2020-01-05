@@ -69,7 +69,7 @@ namespace Imms
             _TerminatedEvent.Set();
             Status = ServiceStatus.Stopped;
 
-            GlobalConstants.DefaultLogger.Debug(string.Format("BaseService.ThreadProc已停止:({0}).", this.ServiceId));
+            GlobalConstants.DefaultLogger.Info(string.Format("BaseService.ThreadProc已停止:({0}).", this.ServiceId));
         }
 
         protected virtual bool DoInternalShutdown() { return true; }

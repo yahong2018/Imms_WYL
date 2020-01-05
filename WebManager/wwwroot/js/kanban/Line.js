@@ -419,7 +419,7 @@ function getQueryVariable(variable) {
     }
     return (false);
 }
-var lineNo = getQueryVariable("lineNo");
+
 var WebSocketProxy = {
     open: function () {
         try {
@@ -427,21 +427,22 @@ var WebSocketProxy = {
             var port = document.location.port ? (":" + document.location.port) : "";
             var url = scheme + "://" + document.location.hostname + port + "/line";
             var websocket = new WebSocket(url);
-
-            this.websocket = websocket;
-            var me = this;
             websocket.onopen = function () {
                 console.log("connected,before login...");
-                me.send(lineNo);
+                var lineNo = getQueryVariable("lineNo");
+                websocket.send(lineNo);
                 console.log("after logined");
             };
             websocket.onerror = function (evt) {
                 console.log("error");
-                me.reconnect();
+                try {
+                    websocket.close();
+                } catch (e) {
+                }
             };
             websocket.onclose = function () {
                 console.log("closed.");
-                me.reconnect();
+                WebSocketProxy.reconnect();
             };
             websocket.onmessage = function (evt) {
                 try {
@@ -456,14 +457,7 @@ var WebSocketProxy = {
     },
     reconnect: function () {
         console.log("begin reconnect ...");
-        setTimeout(this.open(), 1000 * 10);
-    },
-    close: function () {
-        this.websocket.close();
-        this.websocket = null;
-    },
-    send: function (msg) {
-        this.websocket.send(msg);
+        setTimeout(this.open, 1000 * 10);
     }
 };
 

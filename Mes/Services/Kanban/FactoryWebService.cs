@@ -52,15 +52,15 @@ namespace Imms.Mes.Services.Kanban.Factory
 
         protected override void DoInternalThreadProc()
         {
-            if (this._LastDay.Day != DateTime.Now.Day)
-            {
-                this.RefreshOrgData();
-                this.RefreshWorkorder();
-
-                this._LastDay = DateTime.Now;
-            }
             lock (this)
             {
+                if (this._LastDay.Day != DateTime.Now.Day)
+                {
+                    this.RefreshOrgData();
+                    this.RefreshWorkorder();
+
+                    this._LastDay = DateTime.Now;
+                }
                 this.RefreshKanbanData();
             }
         }
@@ -78,8 +78,8 @@ namespace Imms.Mes.Services.Kanban.Factory
                 Imms.Mes.Data.Domain.WorkshiftSpan lastSpan = this._WorkshiftSpanList[workshop.OrgCode]
                      .Where(x => DateTime.Parse(today + " " + x.TimeBegin) < currentTime)
                      .OrderByDescending(x => x.Seq)
-                     .FirstOrDefault();
-                if (lastSpan.IsBreak == 1)
+                     .FirstOrDefault();                
+                if (lastSpan == null || lastSpan.IsBreak == 1)
                 {
                     continue;  //现在是休息时间
                 }
@@ -132,6 +132,7 @@ namespace Imms.Mes.Services.Kanban.Factory
 
         public void RefreshWorkorder()
         {
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "开始刷新工单");
             lock (this)
             {
                 this._ActiveWorkOrderList.Clear();
@@ -140,10 +141,12 @@ namespace Imms.Mes.Services.Kanban.Factory
                          .ToList();
                 this._ActiveWorkOrderList.AddRange(orders);
             }
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "工单刷新完毕");
         }
 
         public void RefreshOrgData()
         {
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "开始刷新组织结构");
             lock (this)
             {
                 this._WorkshopList.Clear();
@@ -162,6 +165,7 @@ namespace Imms.Mes.Services.Kanban.Factory
                     this._KanbanData.WorkHours = spans.Where(x => x.IsBreak == 0).Count();
                 }
             }
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "组织结构刷新完毕");
         }
 
         public override bool Config()

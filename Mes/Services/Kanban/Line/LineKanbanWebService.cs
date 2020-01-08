@@ -102,13 +102,12 @@ namespace Imms.Mes.Services.Kanban.Line
                     catch (Exception e)
                     {
                         GlobalConstants.DefaultLogger.Error(this.LineNo + "发送数据失败：" + e.Message);
-                        GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                        GlobalConstants.DefaultLogger.Error(e.StackTrace);
                     }
                 }
 
                 Thread.Sleep(1000 * 1);
             }
-
             GlobalConstants.DefaultLogger.Info("SocketId:" + this.SocketId + ", LineNo:" + this.LineNo + "的WebSocket推送数据已停止");
         }
     }

@@ -33,7 +33,7 @@ namespace Imms.Data
             {
                 return dbContext.Set<T>().Where(filter).FirstOrDefault();
             }
-        }       
+        }
 
         public static T AssureExistsByFilter<T>(Expression<Func<T, bool>> filter, bool throwException = true) where T : class
         {
@@ -89,7 +89,7 @@ namespace Imms.Data
                     Func<T, bool> filter = (x) =>
                     {
                         return x.RecordId == item.RecordId;
-                    };                    
+                    };
 
                     T oldItem = dbContext.Set<T>().Where(x => x.RecordId == item.RecordId).FirstOrDefault();
                     if (oldItem == null)
@@ -117,21 +117,20 @@ namespace Imms.Data
 
         public static void UseDbContextWithTransaction(params DBContextHandler[] handlers)
         {
-            using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required))
+            using (DbContext dbContext = GlobalConstants.DbContextFactory.GetContext())
             {
-                using (DbContext dbContext = GlobalConstants.DbContextFactory.GetContext())
+                using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required))
                 {
                     foreach (DBContextHandler handler in handlers)
                     {
                         handler(dbContext);
                     }
+                    scope.Complete();
                 }
-                
-                scope.Complete();
             }
         }
     }
 
-    public delegate void DBContextHandler(DbContext dbContext);    
+    public delegate void DBContextHandler(DbContext dbContext);
     public delegate void DMLGenericHandler<T>(T item, int dmlType, DbContext dbContext);
 }

@@ -18,6 +18,17 @@ namespace Imms.Mes.Data
             this._App = app;
         }
 
+        protected override void BeforeDelete(System.Collections.Generic.List<Workorder> items, DbContext dbContext)
+        {
+            foreach (Workorder order in items)
+            {
+                if (order.OrderStatus != Workorder.WORKORDER_STATUS_INITED)
+                {
+                    throw new BusinessException(GlobalConstants.EXCEPTION_CODE_CUSTOM, "已开工、已完工的订单不可以删除！");
+                }
+            }
+        }
+
         protected override void AfterUpdate(Workorder item, DbContext dbContext)
         {
             if (item.OrderStatus > 0)
@@ -27,7 +38,6 @@ namespace Imms.Mes.Data
 
                 Imms.Mes.Services.Kanban.Workshop.WorkshopDataService workshopDataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Workshop.WorkshopDataService>();
                 Task.Run(() => workshopDataService.RefreshWorkorder());
-
 
                 Imms.Mes.Services.Kanban.Factory.FactoryDataService factoryDataService = _App.ApplicationServices.GetService<Imms.Mes.Services.Kanban.Factory.FactoryDataService>();
                 Task.Run(() => factoryDataService.RefreshWorkorder());
@@ -48,7 +58,7 @@ namespace Imms.Mes.Data
             catch (Exception e)
             {
                 GlobalConstants.DefaultLogger.Error("启动工单出现错误:" + e.Message);
-                GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                GlobalConstants.DefaultLogger.Error(e.StackTrace);
             }
             this.RefreshKanban();
         }
@@ -81,10 +91,9 @@ namespace Imms.Mes.Data
         {
             workorder.OrderStatus = Workorder.WOKORDER_STATUS_STARTED;
             workorder.TimeStartActual = DateTime.Now;
-
-            using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required))
+            using (DbContext dbContext = GlobalConstants.DbContextFactory.GetContext())
             {
-                using (DbContext dbContext = GlobalConstants.DbContextFactory.GetContext())
+                using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required))
                 {
                     ActiveWorkorder active = dbContext.Set<ActiveWorkorder>().Where(x => x.LineNo == workorder.LineNo).FirstOrDefault();
                     bool isUpdate = true;
@@ -99,16 +108,18 @@ namespace Imms.Mes.Data
                     }
                     else
                     {
-                        GlobalConstants.DefaultLogger.Info("产线:" + workorder.LineNo + "的原activeOrder已存在，需要修改.");
-                        Workorder oldOrder = dbContext.Set<Workorder>().Where(x => x.OrderNo == active.WorkorderNo).First();
-                        if (oldOrder.OrderStatus != Workorder.WORKORDER_SATUS_CLOSED && oldOrder.OrderNo != workorder.OrderNo)
+                        GlobalConstants.DefaultLogger.Info("产线:" + workorder.LineNo + "的已存在ActiveOrder" + active.WorkorderNo + "，先关闭原产线的工单.");
+                        Workorder oldOrder = dbContext.Set<Workorder>().Where(x => x.OrderNo == active.WorkorderNo).FirstOrDefault();
+                        if (oldOrder != null)
                         {
-                            oldOrder.OrderStatus = Workorder.WORKORDER_SATUS_CLOSED;
-                            oldOrder.TimeEndActual = DateTime.Now;
+                            if (oldOrder.OrderStatus != Workorder.WORKORDER_SATUS_CLOSED && oldOrder.OrderNo != workorder.OrderNo)
+                            {
+                                oldOrder.OrderStatus = Workorder.WORKORDER_SATUS_CLOSED;
+                                oldOrder.TimeEndActual = DateTime.Now;
 
-                            GlobalConstants.ModifyEntityStatus<Workorder>(oldOrder, dbContext);
+                                GlobalConstants.ModifyEntityStatus<Workorder>(oldOrder, dbContext);
+                            }
                         }
-
                     }
                     active.WorkorderNo = workorder.OrderNo;
                     active.LastUpdateTime = DateTime.Now;
@@ -124,6 +135,7 @@ namespace Imms.Mes.Data
                     GlobalConstants.ModifyEntityStatus<Workorder>(workorder, dbContext);
 
                     dbContext.SaveChanges();
+
                     scope.Complete();
                 }
             }

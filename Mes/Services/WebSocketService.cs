@@ -95,7 +95,7 @@ namespace Imms.Mes.Services
             catch (Exception e)
             {
                 GlobalConstants.DefaultLogger.Error("Socket移除出现异常：" + e.Message);
-                GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                GlobalConstants.DefaultLogger.Error(e.StackTrace);
             }
         }
 
@@ -160,7 +160,7 @@ namespace Imms.Mes.Services
             catch (Exception ex)
             {
                 GlobalConstants.DefaultLogger.Error("数据接收失败：" + ex.Message);
-                GlobalConstants.DefaultLogger.Debug(ex.StackTrace);
+                GlobalConstants.DefaultLogger.Error(ex.StackTrace);
 
                 handleMessage(new WebSocketReceiveResult(0, WebSocketMessageType.Close, false), null);
             }
@@ -208,7 +208,7 @@ namespace Imms.Mes.Services
             catch (Exception e)
             {
                 GlobalConstants.DefaultLogger.Error("数据发送失败：" + e.Message);
-                GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                GlobalConstants.DefaultLogger.Error(e.StackTrace);
             }
         }
 

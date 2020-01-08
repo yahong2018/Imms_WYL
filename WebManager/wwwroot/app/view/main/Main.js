@@ -53,8 +53,12 @@ Ext.define('app.view.main.Main', {
 					failCallback: function (response, opts){
 						console.log('failed keep alive:' + Ext.util.Format.date(new Date(), "Y-m-d H:i:s"));
 						console.log(response.responseText);
+
+						task.stop();
+						
+						Ext.Msg.alert("系统提示","已与后台断开连接，请刷新页面重新登录，如果不能登录系统请联系管理员!");	
 					}
-				})
+				});
 			}
 		});
 		mainView.getViewModel().set('system.autoRefreshTask', task);

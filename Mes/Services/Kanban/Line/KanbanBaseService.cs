@@ -25,6 +25,7 @@ namespace Imms.Mes.Services.Kanban.Line
 
         public virtual void RefreshOrgAndSpanData()
         {
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "正在刷新组织结构和工作班次...");
             lock (this)
             {
                 this._LineSpans.Clear();
@@ -42,6 +43,7 @@ namespace Imms.Mes.Services.Kanban.Line
                     }
                 }
             }
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "组织结构和工作班次刷新完毕...");
         }
     }
 }

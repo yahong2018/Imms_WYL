@@ -29,17 +29,25 @@ namespace Imms.Mes.Services.Kanban.Line
 
         protected override void DoInternalThreadProc()
         {
-            lock (this)
+            try
             {
-                if (DateTime.Now.Day != this._LastDay.Day)
+                lock (this)
                 {
-                    this.CloseCompletedWorkorders();
-                    this.RefreshActiveWorkorders();
+                    if (DateTime.Now.Day != this._LastDay.Day)
+                    {
+                        this.CloseCompletedWorkorders();
+                        this.RefreshActiveWorkorders();
 
-                    this._LastDay = DateTime.Now;
+                        this._LastDay = DateTime.Now;
+                    }
+
+                    this.RefreshAllLineData();
                 }
-
-                this.RefreshAllLineData();
+            }
+            catch (Exception e)
+            {
+                GlobalConstants.DefaultLogger.Error(this.ServiceId + "处理数据出现错误:" + e.Message);
+                GlobalConstants.DefaultLogger.Error(e.StackTrace);
             }
         }
 

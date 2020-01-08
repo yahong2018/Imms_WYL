@@ -31,6 +31,7 @@ namespace Imms.Mes.Services.Kanban.Line
 
         public override void RefreshOrgAndSpanData()
         {
+            GlobalConstants.DefaultLogger.Info(this.ServiceId+"正在刷新组织结构和工作班次...");
             lock (this)
             {
                 base.RefreshOrgAndSpanData();
@@ -41,10 +42,12 @@ namespace Imms.Mes.Services.Kanban.Line
                     this._LampStatusList.Add(line.LineCode, 0);
                 }
             }
+            GlobalConstants.DefaultLogger.Info(this.ServiceId+"组织结构和工作班次刷新完毕...");
         }
 
         public void RefreshTimes()
         {
+            GlobalConstants.DefaultLogger.Info(this.ServiceId+"正在刷新亮灯时间...");
             lock (this)
             {
                 DateTime currentTime = DateTime.Now;
@@ -56,6 +59,7 @@ namespace Imms.Mes.Services.Kanban.Line
                     this._LastLightTimeList.Add(lineCode, currentTime);
                 }
             }
+            GlobalConstants.DefaultLogger.Info(this.ServiceId+"亮灯时间刷新完毕");
         }
 
         protected override void DoInternalThreadProc()
@@ -84,7 +88,7 @@ namespace Imms.Mes.Services.Kanban.Line
             catch (Exception e)
             {
                 GlobalConstants.DefaultLogger.Error("灯光控制出现异常:" + e.Message);
-                GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                GlobalConstants.DefaultLogger.Error(e.StackTrace);
             }
         }
 

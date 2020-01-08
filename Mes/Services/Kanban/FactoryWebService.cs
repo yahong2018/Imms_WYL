@@ -54,14 +54,22 @@ namespace Imms.Mes.Services.Kanban.Factory
         {
             lock (this)
             {
-                if (this._LastDay.Day != DateTime.Now.Day)
+                try
                 {
-                    this.RefreshOrgData();
-                    this.RefreshWorkorder();
+                    if (this._LastDay.Day != DateTime.Now.Day)
+                    {
+                        this.RefreshOrgData();
+                        this.RefreshWorkorder();
 
-                    this._LastDay = DateTime.Now;
+                        this._LastDay = DateTime.Now;
+                    }
+                    this.RefreshKanbanData();
                 }
-                this.RefreshKanbanData();
+                catch (Exception e)
+                {
+                    GlobalConstants.DefaultLogger.Error(this.ServiceId + "处理数据出现错误:" + e.Message);
+                    GlobalConstants.DefaultLogger.Error(e.StackTrace);
+                }
             }
         }
 
@@ -78,7 +86,7 @@ namespace Imms.Mes.Services.Kanban.Factory
                 Imms.Mes.Data.Domain.WorkshiftSpan lastSpan = this._WorkshiftSpanList[workshop.OrgCode]
                      .Where(x => DateTime.Parse(today + " " + x.TimeBegin) < currentTime)
                      .OrderByDescending(x => x.Seq)
-                     .FirstOrDefault();                
+                     .FirstOrDefault();
                 if (lastSpan == null || lastSpan.IsBreak == 1)
                 {
                     continue;  //现在是休息时间
@@ -280,7 +288,7 @@ namespace Imms.Mes.Services.Kanban.Factory
                     catch (Exception e)
                     {
                         GlobalConstants.DefaultLogger.Error("Factorykanban 发送数据失败：" + e.Message);
-                        GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                        GlobalConstants.DefaultLogger.Error(e.StackTrace);
                     }
                 }
 

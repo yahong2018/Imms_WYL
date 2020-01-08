@@ -12,7 +12,7 @@ Ext.define("app.view.imms.mfc.workorder.Workorder", {
 
     additionToolbarItems: [
         '-',
-        { text: '开工', handler: 'startOrder', privilege: "START",buttonId:"BTN_START" },
+        { text: '开工', handler: 'startOrder', privilege: "START", buttonId: "BTN_START" },
         // '-',
         // { text: '导入', handler: 'importOrder', privilege: "IMPORT" },
     ],
@@ -27,7 +27,7 @@ Ext.define("app.view.imms.mfc.workorder.Workorder", {
 
         this.callParent(arguments);
     },
-    listeners:{
-        selectionchange:'gridSelectionChanged'
+    listeners: {
+        selectionchange: 'gridSelectionChanged'
     }
 });

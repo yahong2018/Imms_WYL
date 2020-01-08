@@ -6,37 +6,56 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System;
+using Imms.Security.Data.Domain;
 
 namespace Imms.Data
 {
-
     public class SimpleCRUDLogic<T> where T : class, IEntity
     {
         public T Create(T item)
         {
+            SystemUser user = GlobalConstants.GetCurrentUser();
+            string json = item.ToJson();
+            GlobalConstants.DefaultLogger.Info(user.UserCode + "正在创建数据:");
+            GlobalConstants.DefaultLogger.Info("\n"+json);
+
             CommonRepository.UseDbContextWithTransaction(dbContext =>
             {
                 this.Create(item, dbContext);
             });
+
+            GlobalConstants.DefaultLogger.Info("数据创建完毕");
+
             return item;
         }
 
         public T Update(T item)
         {
+            SystemUser user = GlobalConstants.GetCurrentUser();
+            string json = item.ToJson();
+            GlobalConstants.DefaultLogger.Info(user.UserCode + "正在更新数据:");
+            GlobalConstants.DefaultLogger.Info("\n"+json);
+
             CommonRepository.UseDbContextWithTransaction(dbContext =>
             {
                 this.Update(item, dbContext);
             });
+            GlobalConstants.DefaultLogger.Info("数据更新完毕");
+
             return item;
         }
 
         public int Delete(long[] ids)
         {
+            SystemUser user = GlobalConstants.GetCurrentUser();
+            string json = ids.ToJson();
+            GlobalConstants.DefaultLogger.Info(user.UserCode + "正在删除数据:");
+            GlobalConstants.DefaultLogger.Info("\n"+json);
             CommonRepository.UseDbContextWithTransaction(dbContext =>
             {
                 Delete(ids, dbContext);
             });
-
+            GlobalConstants.DefaultLogger.Info(user.UserCode + "删除数据完毕");
             return ids.Length;
         }
 

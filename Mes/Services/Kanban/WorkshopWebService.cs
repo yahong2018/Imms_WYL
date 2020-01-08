@@ -58,16 +58,24 @@ namespace Imms.Mes.Services.Kanban.Workshop
         {
             lock (this)
             {
-                if (this._LastDay.Day != DateTime.Now.Day)
+                try
                 {
-                    this._WorkshopDataList.Clear();
+                    if (this._LastDay.Day != DateTime.Now.Day)
+                    {
+                        this._WorkshopDataList.Clear();
 
-                    this.RefreshOrgData();
-                    this.RefreshWorkorder();
+                        this.RefreshOrgData();
+                        this.RefreshWorkorder();
 
-                    this._LastDay = DateTime.Now;
+                        this._LastDay = DateTime.Now;
+                    }
+                    this.RefreshKanbanData();
                 }
-                this.RefreshKanbanData();
+                catch (Exception e)
+                {
+                    GlobalConstants.DefaultLogger.Error(this.ServiceId + "处理数据出现异常:" + e.Message);
+                    GlobalConstants.DefaultLogger.Error(e.StackTrace);
+                }
             }
         }
 
@@ -143,7 +151,7 @@ namespace Imms.Mes.Services.Kanban.Workshop
 
         public void RefreshWorkorder()
         {
-            GlobalConstants.DefaultLogger.Info(this.ServiceId+"开始刷新工单...");
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "开始刷新工单...");
             lock (this)
             {
                 this._ActiveWorkOrderList.Clear();
@@ -152,12 +160,12 @@ namespace Imms.Mes.Services.Kanban.Workshop
                          .ToList();
                 this._ActiveWorkOrderList.AddRange(orders);
             }
-            GlobalConstants.DefaultLogger.Info(this.ServiceId+"工单刷新完毕");
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "工单刷新完毕");
         }
 
         public void RefreshOrgData()
         {
-            GlobalConstants.DefaultLogger.Info(this.ServiceId+"开始刷新组织结构与工作班次");
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "开始刷新组织结构与工作班次");
             lock (this)
             {
                 this._WorkshopList.Clear();
@@ -182,7 +190,7 @@ namespace Imms.Mes.Services.Kanban.Workshop
                     data.WorkHours = spans.Where(x => x.IsBreak == 0).Count();
                 }
             }
-            GlobalConstants.DefaultLogger.Info(this.ServiceId+"组织结构与工作班次刷新完毕");
+            GlobalConstants.DefaultLogger.Info(this.ServiceId + "组织结构与工作班次刷新完毕");
         }
 
         public override bool Config()
@@ -299,7 +307,7 @@ namespace Imms.Mes.Services.Kanban.Workshop
                     catch (Exception e)
                     {
                         GlobalConstants.DefaultLogger.Error(this.WorkshopCode + "发送数据失败：" + e.Message);
-                        GlobalConstants.DefaultLogger.Debug(e.StackTrace);
+                        GlobalConstants.DefaultLogger.Error(e.StackTrace);
                     }
                 }
 

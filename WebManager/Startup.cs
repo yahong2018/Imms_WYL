@@ -147,7 +147,7 @@ namespace Imms.WebManager
             }
             app.UseSession();
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
 

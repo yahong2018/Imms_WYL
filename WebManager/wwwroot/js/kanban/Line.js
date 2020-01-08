@@ -11,7 +11,7 @@ var option = {
         text: '生产达成率 Hourly OTD %',
         left: 'center',
         textStyle: {
-            color: 'red',
+            color: 'white',
             fontSize: 32,
             fontFamily: '微软雅黑',
             fontWeight: 'bolder'
@@ -277,10 +277,10 @@ function fill_detail_data(config) {
     }
     fill_row(row_summary, {
         period: '累计数',
-        qty_plan: total_plan + "(件)",
-        qty_good: total_good + "(件)",
-        qty_bad: total_bad + "(件)",
-        sub_total: total_actual + "(件)",
+        qty_plan: total_plan ,
+        qty_good: total_good ,
+        qty_bad: total_bad ,
+        sub_total: total_actual,
         percentOfPass: percentOfPass.toFixed(1) + "%",
         percentOfProduction: percentOfProduction.toFixed(1) + "%"
     });

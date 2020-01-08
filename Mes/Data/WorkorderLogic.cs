@@ -108,7 +108,7 @@ namespace Imms.Mes.Data
                     }
                     else
                     {
-                        GlobalConstants.DefaultLogger.Info("产线:" + workorder.LineNo + "的已存在ActiveOrder" + active.WorkorderNo + "，先关闭原产线的工单.");
+                        GlobalConstants.DefaultLogger.Info("产线:" + workorder.LineNo + "已存在ActiveOrder" + active.WorkorderNo + "，先关闭原产线的工单.");
                         Workorder oldOrder = dbContext.Set<Workorder>().Where(x => x.OrderNo == active.WorkorderNo).FirstOrDefault();
                         if (oldOrder != null)
                         {

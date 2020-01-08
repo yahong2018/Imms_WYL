@@ -51,7 +51,12 @@ namespace Imms.WebManager.Controllers
                 item.PicUrl = op.Pic;
             }
 
+            string hostAndPort = (Request.HttpContext.Connection.LocalIpAddress.MapToIPv4().ToString() + ":" + Request.HttpContext.Connection.LocalPort);
+            string protocol = this.HttpContext.Request.IsHttps?"https":"http";
+            string basePath = protocol+"://"+hostAndPort+this.HttpContext.Request.PathBase.ToString();
+
             ViewBag.OperatorList = OperatorList;
+            ViewBag.BasePath = basePath;
 
             return View("Line");
         }

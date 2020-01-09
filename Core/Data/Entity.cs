@@ -37,7 +37,7 @@ namespace Imms.Data
 
                 PropertyInfo otherProperty = otherProperties.Where(x => x.Name == property.Name).FirstOrDefault();
                 Type propertyType = property.PropertyType;
-                if (otherProperty == null || (!propertyType.IsPrimitive && propertyType != typeof(string)))
+                if (otherProperty == null || (!propertyType.IsPrimitive && propertyType != typeof(string) && propertyType != typeof(DateTime)))
                 {
                     continue;
                 }

@@ -128,18 +128,25 @@ namespace Imms.Mes.Services
                 return;
 
             var socket = await context.WebSockets.AcceptWebSocketAsync();
+            string ip = context.Connection.RemoteIpAddress.MapToIPv4().ToString();
+            GlobalConstants.DefaultLogger.Info("IP:" + ip + "已连接上服务器");
             _webSocketHandler.OnConnected(socket);
+
 
             await Receive(socket, async (result, buffer) =>
             {
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
+                    string content = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    GlobalConstants.DefaultLogger.Info("IP:" + ip + "收到数据：" + content);
+                    
                     await _webSocketHandler.ReceiveAsync(socket, result, buffer);
                     return;
                 }
 
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
+                    GlobalConstants.DefaultLogger.Info("IP:" + ip + "已断开");
                     await _webSocketHandler.OnDisconnected(socket);
                     return;
                 }

@@ -17,7 +17,7 @@ namespace Imms.Data
             SystemUser user = GlobalConstants.GetCurrentUser();
             string json = item.ToJson();
             GlobalConstants.DefaultLogger.Info(user.UserCode + "正在创建数据:");
-            GlobalConstants.DefaultLogger.Info("\n"+json);
+            GlobalConstants.DefaultLogger.Info("\n" + json);
 
             CommonRepository.UseDbContextWithTransaction(dbContext =>
             {
@@ -34,7 +34,7 @@ namespace Imms.Data
             SystemUser user = GlobalConstants.GetCurrentUser();
             string json = item.ToJson();
             GlobalConstants.DefaultLogger.Info(user.UserCode + "正在更新数据:");
-            GlobalConstants.DefaultLogger.Info("\n"+json);
+            GlobalConstants.DefaultLogger.Info("\n" + json);
 
             CommonRepository.UseDbContextWithTransaction(dbContext =>
             {
@@ -50,7 +50,7 @@ namespace Imms.Data
             SystemUser user = GlobalConstants.GetCurrentUser();
             string json = ids.ToJson();
             GlobalConstants.DefaultLogger.Info(user.UserCode + "正在删除数据:");
-            GlobalConstants.DefaultLogger.Info("\n"+json);
+            GlobalConstants.DefaultLogger.Info("\n" + json);
             CommonRepository.UseDbContextWithTransaction(dbContext =>
             {
                 Delete(ids, dbContext);
@@ -118,13 +118,17 @@ namespace Imms.Data
         }
 
 
-        public ExtJsResult GetAllWithExtResult(int page, int start, int limit, string filterStr, GetDataSourceDelegate<T> dataSourceGetHandler = null, FilterDataSourceDelegate<T> filterHandler = null)
+        public ExtJsResult GetAllWithExtResult(QueryParameter queryParameter, GetDataSourceDelegate<T> dataSourceGetHandler = null, FilterDataSourceDelegate<T> filterHandler = null)
         {
-            FilterExpression[] filterList = filterStr.ToObject<FilterExpression[]>();
-            return this.GetAllWithExtResult(page, start, limit, filterList, dataSourceGetHandler, filterHandler);
+            FilterExpression[] filterList = null;
+            if (!string.IsNullOrEmpty(queryParameter.FilterStr))
+            {
+                filterList = queryParameter.FilterStr.ToObject<FilterExpression[]>();
+            }
+            return this.GetAllWithExtResult(queryParameter, filterList, dataSourceGetHandler, filterHandler);
         }
 
-        public ExtJsResult GetAllWithExtResult(int page, int start, int limit, FilterExpression[] filterList, GetDataSourceDelegate<T> dataSourceGetHandler = null, FilterDataSourceDelegate<T> filterHandler = null)
+        public ExtJsResult GetAllWithExtResult(QueryParameter queryParameter, FilterExpression[] filterList, GetDataSourceDelegate<T> dataSourceGetHandler = null, FilterDataSourceDelegate<T> filterHandler = null)
         {
             GetDataSourceDelegate<T> getDataSource = dataSourceGetHandler;
             if (getDataSource == null)
@@ -142,14 +146,19 @@ namespace Imms.Data
             {
                 IQueryable<T> dataSource = filter(getDataSource(dbContext), filterList);
                 IQueryable<T> countSource = filter(getDataSource(dbContext), filterList);
-                if (start > 0)
+                if (!string.IsNullOrEmpty(queryParameter.SortExpr))
                 {
-                    dataSource = dataSource.Skip(start);
+                    dataSource = dataSource.OrderBy(queryParameter.SortExpr);
                 }
-                if (limit > 0)
+                if (queryParameter.Start > 0)
                 {
-                    dataSource = dataSource.Take(limit);
+                    dataSource = dataSource.Skip(queryParameter.Start);
                 }
+                if (queryParameter.Limit > 0)
+                {
+                    dataSource = dataSource.Take(queryParameter.Limit);
+                }
+
                 try
                 {
                     List<T> list = dataSource.ToList();
@@ -232,6 +241,15 @@ namespace Imms.Data
 
             return $" {this.J} ({this.L} {this.O} @0)";
         }
+    }
+
+    public class QueryParameter
+    {
+        public int Page { get; set; }
+        public int Start { get; set; }
+        public int Limit { get; set; }
+        public string FilterStr { get; set; }
+        public string SortExpr { get; set; }
     }
 
     public delegate IQueryable<T> GetDataSourceDelegate<T>(DbContext dbContext) where T : class, IEntity;

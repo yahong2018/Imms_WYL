@@ -92,7 +92,8 @@ namespace Imms.WebManager
 
         private static Task HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext context, int statusCode, string msg)
         {
-            var result = JsonConvert.SerializeObject(new ApiResult() { Success = false, Data = new ApiResultData() { ExceptionCode = statusCode, RequestUrl = context.Request.Path, Message = msg } });
+            string ip = context.Connection.RemoteIpAddress.MapToIPv4().ToString();
+            var result = JsonConvert.SerializeObject(new ApiResult() { Success = false, IP=ip, Data = new ApiResultData() { ExceptionCode = statusCode, RequestUrl = context.Request.Path, Message = msg } });
             GlobalConstants.DefaultLogger.Error(result);
 
             context.Response.ContentType = "application/json;charset=utf-8";
@@ -104,7 +105,8 @@ namespace Imms.WebManager
         {
             StringBuilder builder = new StringBuilder(ex.Message);
             ErrorHandlingMiddleware.GetExceptionMessage(ex, builder);
-            ApiResult apiResult = new ApiResult() { Success = false, Data = new ApiResultData() { Message = builder.ToString(), RequestUrl = context.Request.Path, ExceptionCode = statusCode } };
+            string ip = context.Connection.RemoteIpAddress.MapToIPv4().ToString();
+            ApiResult apiResult = new ApiResult() { Success = false, IP = ip, Data = new ApiResultData() { Message = builder.ToString(), RequestUrl = context.Request.Path, ExceptionCode = statusCode } };
             if (ex is BusinessException)
             {
                 apiResult.Data.ExceptionCode = (ex as BusinessException).ExceptionCode;
@@ -142,6 +144,7 @@ namespace Imms.WebManager
     public class ApiResult
     {
         public bool Success { get; set; } = true;
+        public string IP { get; set; }
         public ApiResultData Data { get; set; }
     }
 

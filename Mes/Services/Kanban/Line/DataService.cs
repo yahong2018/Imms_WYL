@@ -35,7 +35,10 @@ namespace Imms.Mes.Services.Kanban.Line
                 {
                     if (DateTime.Now.Day != this._LastDay.Day)
                     {
-                        this.CloseCompletedWorkorders();
+                        //
+                        //this.CloseCompletedWorkorders();
+                        //停止自动关闭工单
+                        //
                         this.RefreshActiveWorkorders();
 
                         this._LastDay = DateTime.Now;

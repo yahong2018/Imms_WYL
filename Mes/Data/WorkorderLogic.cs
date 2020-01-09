@@ -44,6 +44,49 @@ namespace Imms.Mes.Data
             }
         }
 
+        public void CompleteWorkder(Workorder item)
+        {
+            if (item.OrderStatus == Workorder.WORKORDER_SATUS_CLOSED)
+            {
+                return;
+            }
+            
+            try
+            {
+                this.DoCompolete(item);
+                GlobalConstants.DefaultLogger.Info("已成功关闭工单:" + item.OrderNo);
+            }
+            catch (Exception e)
+            {
+                GlobalConstants.DefaultLogger.Error("关闭工单" + item.OrderNo + "失败:" + e.Message);
+                GlobalConstants.DefaultLogger.Error(e.StackTrace);
+            }
+
+            this.RefreshKanban();
+        }
+
+        private void DoCompolete(Workorder item)
+        {
+            using (DbContext dbContext = GlobalConstants.DbContextFactory.GetContext())
+            {
+                using (TransactionScope scope = new TransactionScope(TransactionScopeOption.Required))
+                {
+                    ActiveWorkorder active = dbContext.Set<ActiveWorkorder>().Where(x => x.LineNo == item.LineNo).FirstOrDefault();
+                    if (active != null)
+                    {
+                        GlobalConstants.DefaultLogger.Info("清理旧数据:" + active.RecordId);
+                        dbContext.Set<ActiveWorkorder>().Remove(active);
+                    }
+                    item.OrderStatus = Workorder.WORKORDER_SATUS_CLOSED;
+                    item.TimeEndActual = DateTime.Now;
+                    GlobalConstants.ModifyEntityStatus<Workorder>(item, dbContext);
+
+                    dbContext.SaveChanges();
+                    scope.Complete();
+                }
+            }
+        }
+
         public void StartWorkder(Workorder workorder)
         {
             if (workorder.OrderStatus > 0)
@@ -99,7 +142,7 @@ namespace Imms.Mes.Data
                     bool isUpdate = true;
                     if (active == null)
                     {
-                        GlobalConstants.DefaultLogger.Info("产线:" + workorder.LineNo + "的activeOrder不存在，需要新增.");
+                        GlobalConstants.DefaultLogger.Info("新增产线:" + workorder.LineNo + "的activeOrder.");
                         active = new ActiveWorkorder();
                         active.LineNo = workorder.LineNo;
 

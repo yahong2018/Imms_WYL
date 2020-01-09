@@ -40,19 +40,19 @@ namespace Imms
         [Route("getAll"), HttpGet]
         public ExtJsResult GetAll()
         {
-            int page, start, limit;
-            string filterStr;
-            GetQueryParameters(out page, out start, out limit, out filterStr);
-            ExtJsResult result = Logic.GetAllWithExtResult(page, start, limit, filterStr, this.DataSourceGetHandler, this.DataSourceFilterHandler);
+            QueryParameter queryParameter = this.GetQueryParameters();
+
+            ExtJsResult result = Logic.GetAllWithExtResult(queryParameter, this.DataSourceGetHandler, this.DataSourceFilterHandler);
+            this.AfterGetAll(result);
 
             return result;
         }
 
-        protected void GetQueryParameters(out int page, out int start, out int limit, out string filterStr)
+        protected virtual void AfterGetAll(ExtJsResult result) { }
+
+        protected virtual QueryParameter GetQueryParameters()
         {
-            page = -1;
-            start = -1;
-            limit = -1;
+            int page = -1, start = -1, limit = -1;
             IQueryCollection query = this.HttpContext.Request.Query;
             if (query.ContainsKey("page"))
             {
@@ -67,7 +67,15 @@ namespace Imms
                 int.TryParse(query["limit"][0], out limit);
             }
 
-            filterStr = this.GetFilterString();
+            string filterStr = this.GetFilterString();
+
+            QueryParameter parameter = new QueryParameter();
+            parameter.Start = start;
+            parameter.Limit = limit;
+            parameter.Page = page;
+            parameter.FilterStr = filterStr;
+
+            return parameter;
         }
 
         protected virtual void Verify(T item, int operation) { }

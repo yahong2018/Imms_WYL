@@ -69,6 +69,7 @@ namespace Imms.Mes.Services.Kanban.Line
                 if (DateTime.Now.Day != this._Yestoday.Day)
                 {
                     this._Yestoday = DateTime.Now;
+                    this.RefreshOrgAndSpanData();
                     this.RefreshTimes();
                 }
 

@@ -3,7 +3,7 @@ Ext.define('app.model.EntityTreeModel', {
     uses:["app.model.EmptyGenerator"],
     identifier:'empty',
     fields: [
-        { name: "recordId", dbFieldName: 'record_id', type: "string", unique: true },
+        { name: "recordId", type: "string", unique: true },
     ],
     idProperty: 'recordId'
 });

@@ -13,7 +13,7 @@ Ext.define("app.view.imms.mfc.lineProductSummaryDateSpan.LineProductSummaryDateS
         { dataIndex: "qtyBad", text: "不良", align: 'right' },
         { dataIndex: "qtyTotal", text: "产出", align: 'right' },
         {
-            dataIndex: "otd", text: "生产达成率(%)", width:150, align: 'right', renderer: function (v) {
+            dataIndex: "otd", text: "生产达成率(%)", width: 150, align: 'right', renderer: function (v) {
                 if (v > 98) {
                     return v.toFixed(1);
                 }
@@ -24,7 +24,7 @@ Ext.define("app.view.imms.mfc.lineProductSummaryDateSpan.LineProductSummaryDateS
             dataIndex: "fail", text: "不良率(%)", align: 'right', renderer: function (v) {
                 if (v < 3) {
                     return v.toFixed(1);
-                } 
+                }
                 return '<span style="color:red">' + v.toFixed(1) + '</span>';
             }
         },

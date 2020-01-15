@@ -118,7 +118,7 @@ namespace Imms.WebManager
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            Startup.AppBuiloder = app;
+            Startup.AppBuilder = app;
 
             app.UseExceptionHandler(builder =>
               {
@@ -204,7 +204,7 @@ namespace Imms.WebManager
             app.MapWebSocketManager("/factory", app.ApplicationServices.GetService<Mes.Services.Kanban.Factory.FactoryWebService>());
         }
 
-        public static IApplicationBuilder AppBuiloder { get; private set; }
+        public static IApplicationBuilder AppBuilder { get; private set; }
     }
 
     public class DbContextFactory : IDbContextFactory

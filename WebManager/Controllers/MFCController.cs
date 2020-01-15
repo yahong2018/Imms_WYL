@@ -18,9 +18,9 @@ namespace Imms.WebManager.Controllers
     [Route("api/imms/mfc/workorder")]
     public class WorkorderController : SimpleCRUDController<Workorder>
     {
-        public WorkorderController()
+        public WorkorderController(IHostingEnvironment host)
         {
-            this.Logic = new WorkorderLogic(Startup.AppBuiloder);
+            this.Logic = new WorkorderLogic(Startup.AppBuilder, host);
         }
 
         [Route("start"), HttpPost]
@@ -35,6 +35,20 @@ namespace Imms.WebManager.Controllers
         {
             (this.Logic as WorkorderLogic).CompleteWorkder(item);
             return new BusinessException(GlobalConstants.EXCEPTION_CODE_NO_ERROR);
+        }
+
+        [Route("import"), HttpPost]
+        public string Import(int rowStart,int rowEnd,int errorHandle)
+        {
+            if (HttpContext.Request.Form.Files.Count == 0)
+            {
+                return "No file exists";
+            }
+            var file = HttpContext.Request.Form.Files[0];            
+
+            int count = (this.Logic as WorkorderLogic).ImportExcel(rowStart,rowEnd,errorHandle,file);
+
+            return "已成功导入"+count+"条记录!";
         }
     }
 

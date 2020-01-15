@@ -14,8 +14,8 @@ Ext.define("app.view.imms.mfc.workorder.Workorder", {
         '-',
         { text: '开工', handler: 'startOrder', privilege: "START", btnName: "BTN_START" },
         { text: '完工', handler: 'completeOrder', privilege: "COMPLETE", btnName: "BTN_COMPLETE" },
-        // '-',
-        // { text: '导入', handler: 'importOrder', privilege: "IMPORT" },
+         '-',
+        { text: '导入', handler: 'importOrder', privilege: "IMPORT" },
     ],
 
     constructor: function (config) {

@@ -2,6 +2,7 @@ Ext.define('app.view.imms.mfc.workorder.WorkorderController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.imms_mfc_workorder_WorkorderController',
     // uses: ["app.ux.excel.Importer"],
+    uses: ["app.view.imms.mfc.workorder.WorkorderImportForm"],
     startOrder: function () {
         var me = this;
         var url = 'api/imms/mfc/workorder/start'
@@ -59,10 +60,20 @@ Ext.define('app.view.imms.mfc.workorder.WorkorderController', {
             }
         })
     },
-    // importOrder: function () {
-    //     var importer = Ext.create({ xtype: "app_ux_excel_impoter" });
-    //     importer.show();
-    // },
+    importOrder: function () {
+        // var importer = Ext.create({ xtype: "app_ux_excel_impoter" });
+        // importer.show();
+
+        var me = this.getView();
+        var importer = Ext.create({
+            xtype: "app_view_imms_mfc_workorder_WorkorderImportForm", listeners: {
+                close: function () {
+                    me.store.load();
+                }
+            }
+        });
+        importer.show();
+    },
 
     gridSelectionChanged: function (model, selected, index) {
         if (selected.length == 0) {
@@ -84,6 +95,6 @@ Ext.define('app.view.imms.mfc.workorder.WorkorderController', {
 
         //只有未完工订单才可以完工
         button = this.getView().down("[btnName='BTN_COMPLETE']");
-        button.setDisabled(status == 255);       
+        button.setDisabled(status == 255);
     }
 })

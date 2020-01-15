@@ -1,21 +1,170 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using Imms.Data;
 using Imms.Mes.Data.Domain;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OfficeOpenXml;
 
 namespace Imms.Mes.Data
 {
     public class WorkorderLogic : SimpleCRUDLogic<Workorder>
     {
         private IApplicationBuilder _App;
-        public WorkorderLogic(IApplicationBuilder app)
+        private IHostingEnvironment _host;
+        private string[] _exts = new string[] { ".xls", ".xlsx" };
+        public WorkorderLogic(IApplicationBuilder app, IHostingEnvironment host)
         {
             this._App = app;
+            this._host = host;
+        }
+
+        public int ImportExcel(int rowStart, int rowEnd, int errorHandle, IFormFile file)
+        {
+            List<Workorder> orders = Excel2Orders(rowStart, rowEnd, errorHandle, this.SaveExcel(file));
+            CommonRepository.UseDbContext(context =>
+            {
+                foreach (Workorder order in orders)
+                {
+                    context.Set<Workorder>().Add(order);
+                }
+                context.SaveChanges();
+            });
+            return orders.Count;
+        }
+
+        private static List<Workorder> Excel2Orders(int rowStart, int rowEnd, int errorHandle, string fileName)
+        {
+            List<Workorder> orders = new List<Workorder>();
+            FileInfo fileInfo = new FileInfo(fileName);
+            using (ExcelPackage package = new ExcelPackage(fileInfo))
+            {
+                package.Compatibility.IsWorksheets1Based = false;
+                if (package.Workbook.Worksheets.Count == 0)
+                {
+                    throw new BusinessException(GlobalConstants.EXCEPTION_CODE_CUSTOM, "文件没有内容");
+                }
+
+                ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+                int maxRow = worksheet.Dimension.End.Row;
+                if (maxRow < rowEnd)
+                {
+                    rowEnd = maxRow;
+                }
+                int maxCol = worksheet.Dimension.End.Column;
+                if (maxCol < 9)
+                {
+                    throw new BusinessException(GlobalConstants.EXCEPTION_CODE_CUSTOM, "数据小于9列");
+                }
+
+                for (int nRow = rowStart; nRow <= rowEnd; nRow++)
+                {
+                    try
+                    {
+                        Workorder order = Row2Workorder(worksheet, nRow);
+                        orders.Add(order);
+                    }
+                    catch (Exception e)
+                    {
+                        GlobalConstants.DefaultLogger.Error($"导入Excel文件{fileName}出现错误:{e.Message}");
+                        GlobalConstants.DefaultLogger.Error(e.StackTrace);
+
+                        if (errorHandle == 0)
+                        {
+                            throw;
+                        }
+                    }
+                }
+            }
+
+            return orders;
+        }
+
+        private static Workorder Row2Workorder(ExcelWorksheet worksheet, int nRow)
+        {
+            string lineNo = worksheet.Cells[nRow, 1].Value.ToString();
+            string customer = worksheet.Cells[nRow, 2].Value.ToString();
+            string jobNum = worksheet.Cells[nRow, 3].Value.ToString();
+            string partNo = worksheet.Cells[nRow, 4].Value.ToString();
+            string strBegin = worksheet.Cells[nRow, 5].Value.ToString();
+            string strEnd = worksheet.Cells[nRow, 6].Value.ToString();
+            string strReq = worksheet.Cells[nRow, 7].Value.ToString();
+            string strUph = worksheet.Cells[nRow, 8].Value.ToString();
+            string strOperatorCount = worksheet.Cells[nRow, 9].Value.ToString();
+
+            DateTime timeBegin;
+            if (!DateTime.TryParse(strBegin, out timeBegin))
+            {
+                throw new BusinessException(GlobalConstants.EXCEPTION_CODE_CUSTOM, $"将{nRow + 1}行,5列解析为开始时间失败");
+            }
+            DateTime timeEnd;
+            if (!DateTime.TryParse(strBegin, out timeEnd))
+            {
+                throw new BusinessException(GlobalConstants.EXCEPTION_CODE_CUSTOM, $"将{nRow + 1}行,6列解析为结束时间失败");
+            }
+
+            int req;
+            if (!int.TryParse(strReq, out req))
+            {
+                throw new BusinessException(GlobalConstants.EXCEPTION_CODE_CUSTOM, $"将{nRow + 1}行,7列解析为计划数量失败");
+            }
+            int uph;
+            if (!int.TryParse(strReq, out uph))
+            {
+                throw new BusinessException(GlobalConstants.EXCEPTION_CODE_CUSTOM, $"将{nRow + 1}行,8列解析为UPH失败");
+            }
+            int operatorCount;
+            if (!int.TryParse(strOperatorCount, out operatorCount))
+            {
+                throw new BusinessException(GlobalConstants.EXCEPTION_CODE_CUSTOM, $"将{nRow + 1}行,9列解析为人数失败");
+            }
+
+            Workorder order = new Workorder();
+            order.LineNo = lineNo;
+            order.CustomerNo = customer;
+            order.OrderNo = jobNum;
+            order.PartNo = partNo;
+            order.PartName = "";
+            order.TimeStartPlan = timeBegin;
+            order.TimeEndPlan = timeEnd;
+            order.QtyReq = req;
+            order.UPH = uph;
+            return order;
+        }
+
+        private string SaveExcel(IFormFile file)
+        {
+            string webRootPath = this._host.WebRootPath;
+            string ext = System.IO.Path.GetExtension(file.FileName).ToLower();
+            if (!_exts.Contains(ext))
+            {
+                throw new BusinessException(GlobalConstants.EXCEPTION_CODE_CUSTOM, "只可以上传*.xls、*.xlsx等图片文件");
+            }
+
+            string wwwPath = $"upload/workorder/{Guid.NewGuid().ToString()}/{file.FileName}";
+            string fileName = $"{webRootPath}/{wwwPath}";
+            if (System.IO.File.Exists(fileName))
+            {
+                System.IO.File.Delete(fileName);
+            }
+            string path = System.IO.Path.GetDirectoryName(fileName);
+            if (!System.IO.Directory.Exists(path))
+            {
+                System.IO.Directory.CreateDirectory(path);
+            }
+            using (var stream = System.IO.File.Create(fileName))
+            {
+                file.CopyTo(stream);
+            }
+
+            return fileName;
         }
 
         protected override void BeforeDelete(System.Collections.Generic.List<Workorder> items, DbContext dbContext)
@@ -50,7 +199,7 @@ namespace Imms.Mes.Data
             {
                 return;
             }
-            
+
             try
             {
                 this.DoCompolete(item);
